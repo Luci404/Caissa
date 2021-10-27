@@ -3,4 +3,7 @@ set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(Caissa)
-add_executable(Caissa src/main.cpp)
+
+file(GLOB_RECURSE SRC_FILES src/*.cpp)
+add_executable(Caissa ${SRC_FILES})
+target_include_directories(Caissa PUBLIC ./include/)
