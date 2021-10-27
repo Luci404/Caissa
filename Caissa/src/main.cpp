@@ -1,4 +1,6 @@
 #include "CaissaBoard.h"
+#include "CaissaSquare.h"
+#include "CaissaPiece.h"
 
 #include <iostream>
 #include <iomanip>
@@ -6,7 +8,7 @@
 #include <sstream>
 #include <iterator>
 
-CaissaBoard board = CaissaBoard(8, 8);
+CaissaBoard board = CaissaBoard(0, 0);
 
 std::vector<std::string> SplitString(std::string str, std::string token){
     std::vector<std::string>result;
@@ -43,9 +45,9 @@ void CommandLoop()
     {
         if (commandComponents[0] == "HELP")
         {
-            std::cout << std::setw(8) << std::left << "HELP" << std::setw(128) << std::left << "Provides a list of commands and an overview of their function." << std::endl;
-            std::cout << std::setw(8) << std::left << "PRINT" << std::setw(128) << std::left << "Writes the board to the console." << std::endl;
-        
+            std::cout << std::setw(16) << std::left << "HELP" << std::setw(128) << std::left << "Provides a list of commands and an overview of their function." << std::endl;
+            std::cout << std::setw(16) << std::left << "PRINT" << std::setw(128) << std::left << "Writes the board to the console." << std::endl;
+            std::cout << std::setw(16) << std::left << "MOVE <UCI>" << std::setw(128) << std::left << "Performs a move based on a UCI string." << std::endl;
         }
         else if (commandComponents[0] == "PRINT") 
         {
@@ -53,9 +55,30 @@ void CommandLoop()
             {
                 for (size_t file = 0; file < board.GetFileCount(); file++)
                 {
-                    std::cout << "x" << " ";
+                    CaissaSquare* square = board.GetSquare(rank, file);
+                    if (square == nullptr) continue;
+                    std::cout << (square->Occupied() ? "1" : "0") << " ";
                 }
                 std::cout << std::endl;
+            }
+        }
+        else if (commandComponents[0] == "MOVE")
+        {
+            if (commandComponents.size() > 1 && commandComponents[1].size() == 4)
+            {
+                uint16_t originRank = std::string("abcdefghijklmnopqrstuvwxyz").find(commandComponents[1][0]);
+                uint16_t originFile = std::string("123456789").find(commandComponents[1][1]);
+                uint16_t targetRank = std::string("abcdefghijklmnopqrstuvwxyz").find(commandComponents[1][0]);
+                uint16_t targetFile = std::string("123456789").find(commandComponents[1][1]);
+
+                if (!board.Move(originRank, originFile, targetRank, targetFile))
+                {
+                    std::cout << "Failed to perform move: (" << originRank << ", " << originFile << ") -> (" << targetRank << ", " << targetFile << ")";
+                }
+            }
+            else
+            {
+                std::cout << "The syntax of the command is incorrect." << std::endl;
             }
         }
         else
@@ -70,6 +93,11 @@ void CommandLoop()
 
 int main(int argc, char *argv[])
 {
+    board = CaissaBoard(8, 8);
+
+    // Init
+    board.AddPiece(CaissaPiece(), 1, 1);
+
     std::cout << "Caissa 1.0.0" << std::endl;
 
     CommandLoop();

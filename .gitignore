@@ -1,5 +1,9 @@
 # Caissa
 Caissa/*/*.exe
+Caissa/build/
+
+# Visual Studio 2019
+.vs
 
 # Visual Studio Code
 .vscode/
