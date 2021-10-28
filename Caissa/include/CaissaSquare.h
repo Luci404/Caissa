@@ -11,6 +11,8 @@ class CaissaSquare
 
         bool Occupied() const;
 
+        void RemovePiece();
+        CaissaPiece GetPiece();
         void SetPiece(CaissaPiece piece);
     
     private:

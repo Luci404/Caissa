@@ -11,6 +11,16 @@ bool CaissaSquare::Occupied() const
     return m_Piece.has_value();
 }
 
+void CaissaSquare::RemovePiece()
+{
+    m_Piece.reset();
+}
+
+CaissaPiece CaissaSquare::GetPiece()
+{
+    return m_Piece.value();
+}
+
 void CaissaSquare::SetPiece(CaissaPiece piece)
 {
     m_Piece = piece;

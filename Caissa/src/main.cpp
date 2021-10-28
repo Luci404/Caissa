@@ -68,8 +68,8 @@ void CommandLoop()
             {
                 uint16_t originRank = std::string("abcdefghijklmnopqrstuvwxyz").find(commandComponents[1][0]);
                 uint16_t originFile = std::string("123456789").find(commandComponents[1][1]);
-                uint16_t targetRank = std::string("abcdefghijklmnopqrstuvwxyz").find(commandComponents[1][0]);
-                uint16_t targetFile = std::string("123456789").find(commandComponents[1][1]);
+                uint16_t targetRank = std::string("abcdefghijklmnopqrstuvwxyz").find(commandComponents[1][2]);
+                uint16_t targetFile = std::string("123456789").find(commandComponents[1][3]);
 
                 if (!board.Move(originRank, originFile, targetRank, targetFile))
                 {

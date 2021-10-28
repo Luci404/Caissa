@@ -33,8 +33,12 @@ bool CaissaBoard::Move(uint16_t originRank, uint16_t originFile, uint16_t target
     CaissaSquare* originSquare = GetSquare(originRank, originFile);
     CaissaSquare* targetSquare = GetSquare(targetRank, targetFile);
     if (originSquare == nullptr || targetSquare == nullptr) return false;
-
-    // TODO: Move pieces.
+    
+    if (originSquare->Occupied())
+    {
+        targetSquare->SetPiece(originSquare->GetPiece());
+        originSquare->RemovePiece();
+    };
 
     return true;
 }
