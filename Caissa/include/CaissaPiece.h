@@ -9,7 +9,7 @@ class CaissaPiece
         CaissaPiece(CaissaTeamIdentifier teamIdentifier);
 
         static CaissaPieceIdentifier PieceIdentifier() { return CAISSA_PIECEID_INVALID; }
-        virtual CaissaPieceIdentifier GetPieceIdentifier() const { return CAISSA_PIECEID_INVALID; }
+        virtual CaissaPieceIdentifier GetPieceIdentifier() const { return CaissaPiece::PieceIdentifier(); }
 
         CaissaTeamIdentifier GetTeamIdentifier() const { return m_TeamIdentifier; }
     
