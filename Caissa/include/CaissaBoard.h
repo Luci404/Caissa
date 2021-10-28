@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <memory>
 
 class CaissaSquare;
 class CaissaPiece;
@@ -14,7 +15,7 @@ class CaissaBoard
         uint16_t GetRankCount() const { return m_RankCount; }
         uint16_t GetFileCount() const { return m_FileCount; }
 
-        bool AddPiece(CaissaPiece piece, uint16_t rank, uint16_t file);
+        bool AddPiece(std::shared_ptr<CaissaPiece> piece, uint16_t rank, uint16_t file);
         bool Move(uint16_t originRank, uint16_t originFile, uint16_t targetRank, uint16_t targetFile);
 
         CaissaSquare* GetSquare(uint16_t rank, uint16_t file);

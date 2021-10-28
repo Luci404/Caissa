@@ -2,7 +2,7 @@
 
 #include "CaissaPiece.h"
 
-#include <optional>
+#include <memory>
 
 class CaissaSquare
 {
@@ -11,10 +11,9 @@ class CaissaSquare
 
         bool Occupied() const;
 
-        void RemovePiece();
-        CaissaPiece GetPiece();
-        void SetPiece(CaissaPiece piece);
+        std::shared_ptr<CaissaPiece> GetPiece();
+        void SetPiece(std::shared_ptr<CaissaPiece> piece);
     
     private:
-        std::optional<CaissaPiece> m_Piece;
+        std::shared_ptr<CaissaPiece> m_Piece;
 };

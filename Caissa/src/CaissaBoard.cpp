@@ -16,7 +16,7 @@ CaissaBoard::CaissaBoard(uint16_t rankCount, uint16_t fileCount)
     }
 }
 
-bool CaissaBoard::AddPiece(CaissaPiece piece, uint16_t rank, uint16_t file)
+bool CaissaBoard::AddPiece(std::shared_ptr<CaissaPiece> piece, uint16_t rank, uint16_t file)
 {
     CaissaSquare* targetSquare = GetSquare(rank, file);
     if (targetSquare == nullptr) return false;
@@ -34,10 +34,10 @@ bool CaissaBoard::Move(uint16_t originRank, uint16_t originFile, uint16_t target
     CaissaSquare* targetSquare = GetSquare(targetRank, targetFile);
     if (originSquare == nullptr || targetSquare == nullptr) return false;
     
-    if (originSquare->Occupied())
+    if (originSquare->Occupied() && originSquare->GetPiece())
     {
         targetSquare->SetPiece(originSquare->GetPiece());
-        originSquare->RemovePiece();
+        originSquare->SetPiece(nullptr);
     };
 
     return true;

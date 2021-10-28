@@ -2,26 +2,21 @@
 #include "CaissaPiece.h"
 
 CaissaSquare::CaissaSquare()
-    : m_Piece(std::optional<CaissaPiece>())
+    : m_Piece(nullptr)
 {
 }
 
 bool CaissaSquare::Occupied() const
 {
-    return m_Piece.has_value();
+    return m_Piece != nullptr;
 }
 
-void CaissaSquare::RemovePiece()
+std::shared_ptr<CaissaPiece> CaissaSquare::GetPiece()
 {
-    m_Piece.reset();
+    return m_Piece;
 }
 
-CaissaPiece CaissaSquare::GetPiece()
-{
-    return m_Piece.value();
-}
-
-void CaissaSquare::SetPiece(CaissaPiece piece)
+void CaissaSquare::SetPiece(std::shared_ptr<CaissaPiece> piece)
 {
     m_Piece = piece;
 }

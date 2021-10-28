@@ -7,6 +7,7 @@
 #include <string>
 #include <sstream>
 #include <iterator>
+#include <memory>
 
 CaissaBoard board = CaissaBoard(0, 0);
 
@@ -96,7 +97,7 @@ int main(int argc, char *argv[])
     board = CaissaBoard(8, 8);
 
     // Init
-    board.AddPiece(CaissaPiece(), 1, 1);
+    board.AddPiece(std::make_shared<CaissaPiece>(), 1, 1);
 
     std::cout << "Caissa 1.0.0" << std::endl;
 
