@@ -11,6 +11,8 @@ class CaissaPiece
         static CaissaPieceIdentifier PieceIdentifier() { return CAISSA_PIECEID_INVALID; }
         virtual CaissaPieceIdentifier GetPieceIdentifier() const { return CaissaPiece::PieceIdentifier(); }
 
+        virtual std::vector<CaissaMove> GetPseudolegalMoves();
+
         CaissaTeamIdentifier GetTeamIdentifier() const { return m_TeamIdentifier; }
     
     private:

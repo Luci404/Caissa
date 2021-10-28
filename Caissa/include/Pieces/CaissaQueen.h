@@ -9,4 +9,6 @@ class CaissaQueen : public CaissaPiece
 
         static CaissaPieceIdentifier PieceIdentifier() { return 'q'; }
         virtual CaissaPieceIdentifier GetPieceIdentifier() const { return CaissaQueen::PieceIdentifier(); }
+
+        virtual std::vector<CaissaMove> GetPseudolegalMoves() override;
 };

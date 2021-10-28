@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Caissa.h"
+
 #include <stdint.h>
 #include <vector>
 #include <memory>
@@ -20,9 +22,15 @@ class CaissaBoard
 
         CaissaSquare* GetSquare(uint16_t rank, uint16_t file);
 
+        // Move generation
+        void GeneratePseudolegalMoves();
+
     private:
         uint16_t m_RankCount;
         uint16_t m_FileCount;
 
         std::vector<std::vector<CaissaSquare>> m_Squares;
+
+        // Move generation
+        std::vector<CaissaMove> m_PseudolegalMoves;
 };

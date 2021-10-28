@@ -131,7 +131,7 @@ void CommandLoop()
 int main(int argc, char *argv[])
 {
     board = CaissaBoard(8, 8);
-
+    
     // Init White
     board.AddPiece(std::make_shared<CaissaRook>(0x00), 0, 0);
     board.AddPiece(std::make_shared<CaissaKnight>(0x00), 0, 1);
