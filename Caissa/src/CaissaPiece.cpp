@@ -1,5 +1,6 @@
 #include "CaissaPiece.h"
 
-CaissaPiece::CaissaPiece()
+CaissaPiece::CaissaPiece(CaissaTeamIdentifier teamIdentifier)
+	: m_TeamIdentifier(teamIdentifier)
 {   
 }

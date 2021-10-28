@@ -1,11 +1,18 @@
 #pragma once
 
-#include <vector>
+#include "Caissa.h"
 
-// CaissaPiece NEEDS is being passed by value and should therefor not be larger than 32 bytes!
 class CaissaPiece
 {
     public:
-        CaissaPiece();
+        CaissaPiece() = default;
+        CaissaPiece(CaissaTeamIdentifier teamIdentifier);
 
+        static CaissaPieceIdentifier PieceIdentifier() { return CAISSA_PIECEID_INVALID; }
+        virtual CaissaPieceIdentifier GetPieceIdentifier() const { return CAISSA_PIECEID_INVALID; }
+
+        CaissaTeamIdentifier GetTeamIdentifier() const { return m_TeamIdentifier; }
+    
+    private:
+        CaissaTeamIdentifier m_TeamIdentifier;
 };

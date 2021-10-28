@@ -96,8 +96,25 @@ int main(int argc, char *argv[])
 {
     board = CaissaBoard(8, 8);
 
-    // Init
-    board.AddPiece(std::make_shared<CaissaPiece>(), 1, 1);
+    // Init White
+    board.AddPiece(std::make_shared<CaissaPiece>(0x00), 1, 0);
+    board.AddPiece(std::make_shared<CaissaPiece>(0x00), 1, 1);
+    board.AddPiece(std::make_shared<CaissaPiece>(0x00), 1, 2);
+    board.AddPiece(std::make_shared<CaissaPiece>(0x00), 1, 3);
+    board.AddPiece(std::make_shared<CaissaPiece>(0x00), 1, 4);
+    board.AddPiece(std::make_shared<CaissaPiece>(0x00), 1, 5);
+    board.AddPiece(std::make_shared<CaissaPiece>(0x00), 1, 6);
+    board.AddPiece(std::make_shared<CaissaPiece>(0x00), 1, 7);
+
+    // Init Black
+    board.AddPiece(std::make_shared<CaissaPiece>(0x01), 6, 0);
+    board.AddPiece(std::make_shared<CaissaPiece>(0x01), 6, 1);
+    board.AddPiece(std::make_shared<CaissaPiece>(0x01), 6, 2);
+    board.AddPiece(std::make_shared<CaissaPiece>(0x01), 6, 3);
+    board.AddPiece(std::make_shared<CaissaPiece>(0x01), 6, 4);
+    board.AddPiece(std::make_shared<CaissaPiece>(0x01), 6, 5);
+    board.AddPiece(std::make_shared<CaissaPiece>(0x01), 6, 6);
+    board.AddPiece(std::make_shared<CaissaPiece>(0x01), 6, 7);
 
     std::cout << "Caissa 1.0.0" << std::endl;
 
