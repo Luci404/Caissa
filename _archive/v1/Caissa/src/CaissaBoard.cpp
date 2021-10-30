@@ -4,14 +4,14 @@
 
 #include <iostream>
 
-CaissaBoard::CaissaBoard(uint16_t rankCount, uint16_t fileCount)
-    : m_RankCount(rankCount), m_FileCount(fileCount)
+CaissaBoard::CaissaBoard(std::shared_ptr<CaissaConfiguration> configuration)
+    : m_Configuration(configuration)
 {
-    for (uint16_t rank = 0; rank < m_RankCount; rank++)
+    for (uint16_t rank = 0; rank < m_Configuration->RankCount; rank++)
     {
-        m_Squares.push_back(std::vector<CaissaSquare>(m_FileCount));
+        m_Squares.push_back(std::vector<CaissaSquare>(m_Configuration->FileCount));
 
-        for (uint16_t file = 0; file < m_FileCount; file++)
+        for (uint16_t file = 0; file < m_Configuration->RankCount; file++)
         {
             m_Squares[rank][file] = CaissaSquare();
         }
@@ -43,12 +43,7 @@ bool CaissaBoard::Move(uint16_t originRank, uint16_t originFile, uint16_t target
     };
 
     GeneratePseudolegalMoves();
-    
-    std::cout << "Pseudo-legal Moves" << std::endl;
-    for (CaissaMove move : m_PseudolegalMoves)
-    {
-        std::cout << " - (" << move.OriginRank << ", " << move.OriginFile << ") -> (" << move.TargetRank << ", " << move.TargetFile << ")" << std::endl;
-    }
+    std::cout << "Pseudo-legal Moves: " << m_PseudolegalMoves.size() << std::endl;
 
     return true;
 }
@@ -65,13 +60,13 @@ void CaissaBoard::GeneratePseudolegalMoves()
 {
     std::vector<CaissaMove> moves;
 
-    for(uint16_t rank = 0; rank < m_RankCount; rank++)
+    for(uint16_t rank = 0; rank < m_Configuration->RankCount; rank++)
     {
-        for (uint16_t file = 0; file < m_FileCount; file++)
+        for (uint16_t file = 0; file < m_Configuration->FileCount; file++)
         {
             if (m_Squares[rank][file].Occupied())
             {
-                std::vector<CaissaMove> pieceMoves = m_Squares[rank][file].GetPiece()->GetPseudolegalMoves();
+                std::vector<CaissaMove> pieceMoves = m_Squares[rank][file].GetPiece()->GetPseudolegalMoves(m_Configuration, rank, file);
                 moves.insert(std::end(moves), std::begin(pieceMoves), std::end(pieceMoves)); 
             }
         }

@@ -18,7 +18,7 @@
 #include <iterator>
 #include <memory>
 
-CaissaBoard board = CaissaBoard(0, 0);
+CaissaBoard board = CaissaBoard(std::make_shared<CaissaConfiguration>());
 
 std::vector<std::string> SplitString(std::string str, std::string token){
     std::vector<std::string>result;
@@ -130,7 +130,11 @@ void CommandLoop()
 
 int main(int argc, char *argv[])
 {
-    board = CaissaBoard(8, 8);
+    std::shared_ptr<CaissaConfiguration> configuration = std::make_shared<CaissaConfiguration>();
+    configuration->RankCount = 8;
+    configuration->FileCount = 8;
+
+    board = CaissaBoard(configuration);
     
     // Init White
     board.AddPiece(std::make_shared<CaissaRook>(0x00), 0, 0);

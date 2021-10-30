@@ -12,10 +12,10 @@ class CaissaPiece;
 class CaissaBoard
 {
     public:
-        CaissaBoard(uint16_t rankCount, uint16_t fileCount);
+        CaissaBoard(std::shared_ptr<CaissaConfiguration> configuration);
 
-        uint16_t GetRankCount() const { return m_RankCount; }
-        uint16_t GetFileCount() const { return m_FileCount; }
+        uint16_t GetRankCount() const { return m_Configuration->RankCount; }
+        uint16_t GetFileCount() const { return m_Configuration->FileCount; }
 
         bool AddPiece(std::shared_ptr<CaissaPiece> piece, uint16_t rank, uint16_t file);
         bool Move(uint16_t originRank, uint16_t originFile, uint16_t targetRank, uint16_t targetFile);
@@ -26,8 +26,7 @@ class CaissaBoard
         void GeneratePseudolegalMoves();
 
     private:
-        uint16_t m_RankCount;
-        uint16_t m_FileCount;
+        std::shared_ptr<CaissaConfiguration> m_Configuration;
 
         std::vector<std::vector<CaissaSquare>> m_Squares;
 

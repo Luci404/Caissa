@@ -10,5 +10,5 @@ class CaissaKing : public CaissaPiece
         static CaissaPieceIdentifier PieceIdentifier() { return 'k'; }
         virtual CaissaPieceIdentifier GetPieceIdentifier() const { return CaissaKing::PieceIdentifier(); }
 
-        virtual std::vector<CaissaMove> GetPseudolegalMoves() override;
+        virtual std::vector<CaissaMove> GetPseudolegalMoves(std::shared_ptr<CaissaConfiguration> configuration, uint16_t rank, uint16_t file) override;
 };

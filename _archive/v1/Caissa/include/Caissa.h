@@ -2,6 +2,7 @@
 
 #include <inttypes.h>
 #include <vector>
+#include <memory>
 
 typedef uint8_t CaissaPieceIdentifier;
 #define CAISSA_PIECEID_INVALID 0xFF; // 1111 1111
@@ -20,7 +21,7 @@ public:
         : OriginRank(originRank), OriginFile(originFile), TargetRank(targetRank), TargetFile(targetFile) {}
 };
 
-typedef struct CaissaConfigurationData
+typedef struct CaissaConfiguration
 {
 public:
     uint16_t RankCount;
