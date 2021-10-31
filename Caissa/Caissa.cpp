@@ -33,6 +33,9 @@ uint16_t mailbox64[64] = {
     91, 92, 93, 94, 95, 96, 97, 98
 };
 
+#define ROW(x)			(x >> 3)
+#define COL(x)			(x & 7)
+
 struct Move
 {
 public:
@@ -76,7 +79,7 @@ public:
             else if (i == 7 * 8 + 2 || i == 7 * 8 + 5) pieces[i] = 'b';
             else if (i == 7 * 8 + 3) pieces[i] = 'q';
             else if (i == 7 * 8 + 4) pieces[i] = 'k';
-            else if (i > 6 * 8 - 1 && i < 8 * 8 + 0) pieces[i] = 'p';
+            else if (i > 47 && i < 56) pieces[i] = 'p';
             //else if (i > 6 * 8 - 1 && i < 8 * 8 + 0) pieces[i] = 'p';
             else pieces[i] = 0x00; 
         }
@@ -84,7 +87,8 @@ public:
 
     virtual void Print() const override
     {   
-        std::cout << "    a b c d e f g h     " << std::endl << std::endl;
+        std::cout << "+-- a b c d e f g h --+" << std::endl;
+        std::cout << "|                     |" << std::endl;
         for (int16_t rank = 7; rank >= 0; rank--)
         {
             std::cout << rank << "   ";
@@ -94,7 +98,8 @@ public:
             }
             std::cout << "  " << rank << std::endl;
         }
-        std::cout << std::endl << "    a b c d e f g h    " << std::endl;
+        std::cout << "|                     |" << std::endl;
+        std::cout << "+-- a b c d e f g h --+" << std::endl;
     }
 
     uint64_t Perft(int depth)
@@ -125,8 +130,68 @@ public:
 
         for (uint16_t i = 0; i < 64; ++i)
         {
+            if (std::isupper(pieces[i]) /* White side to move. */)
+            {
+                if (pieces[i] == 'P')
+                {
+                    //std::cout << i << " - "<< COL(i) << ", " << ROW(i) << std::endl;
+                    // Generate white pawn captures.
+                    if (COL(i) != 0 && std::islower(pieces[i + 7])) moves.push_back(Move(i, i + 7));
+                    if (COL(i) != 0 && std::islower(pieces[i + 9])) moves.push_back(Move(i, i + 9));
+                    // Generate white pawn push and long push.
+                    if (pieces[i + 8] == 0x00) moves.push_back(Move(i, i + 8));
+                    if (pieces[i + 16] == 0x00 && i <= 15) moves.push_back(Move(i, i + 16));
+                }
+                else if (pieces[i] == 'p')
+                {
+                    // Generate white pawn captures.
+                    if (COL(i) != 0 && std::islower(pieces[i - 7])) moves.push_back(Move(i, i - 7));
+                    if (COL(i) != 0 && std::islower(pieces[i - 9])) moves.push_back(Move(i, i - 9));
+                    // Generate white pawn push and long push.
+                    if (pieces[i - 8] == 0x00) moves.push_back(Move(i, i - 8));
+                    if (pieces[i - 16] == 0x00 && i >= 48) moves.push_back(Move(i, i - 16));
+                }
+                else
+                {
+                    int piece = 0;
+                    if (std::toupper(pieces[i]) == 'N') piece = 1;
+                    else if (std::toupper(pieces[i]) == 'B') piece = 2;
+                    else if (std::toupper(pieces[i]) == 'R') piece = 3;
+                    else if (std::toupper(pieces[i]) == 'Q') piece = 4;
+                    else if (std::toupper(pieces[i]) == 'K') piece = 5;
 
-            if (pieces[i] == 'P')
+                    bool slide[6] = {
+	                    false, false, false, false, false, false
+                    };
+
+                    int offset[6][8] = {
+	                    { 0, 0, 0, 0, 0, 0, 0, 0 },
+	                    { -21, -19, -12, -8, 8, 12, 19, 21 },
+	                    { -11, -9, 9, 11, 0, 0, 0, 0 },
+	                    { -10, -1, 1, 10, 0, 0, 0, 0 },
+	                    { -11, -10, -9, -1, 1, 9, 10, 11 },
+	                    { -11, -10, -9, -1, 1, 9, 10, 11 }
+                    };
+
+                    int16_t offsets[6] = {
+	                    0, 8, 4, 4, 8, 8
+                    };
+
+                    for (uint16_t j = 0; j < offsets[piece]; ++j)
+                    {
+                        for (uint16_t target = i;;)
+                        {
+                            target = mailbox[mailbox64[i] + offset[piece][j]];
+                            if (target == UINT16_MAX) break; /* Check if target is out of board. */
+                            if (std::isupper(pieces[target])) break; /* Check if target is occupied by a friendly piece. */
+                            moves.push_back(Move(i, target));
+                            if (!slide[piece]) break;
+                        }
+                    }
+                }
+            }
+
+            /*if (pieces[i] == 'P')
             {
                 if (pieces[i + 10] == 0x00) moves.push_back(Move(i, i + 10));
                 else if (pieces[i + 20] == 0x00 && i > 29 && i < 39) moves.push_back(Move(i, i + 20));
@@ -175,7 +240,7 @@ public:
             else if (pieces[i] == 'Q' || pieces[i] == 'q')
             {
                 // Queen offsets(10x12): { -11, -10, -9, -1, 1,  9, 10, 11 }
-            }
+            }*/
         }
 
         return moves;
@@ -192,12 +257,12 @@ int main(int argc, char* argv[])
     board.Print();
 
     std::cout << "Perft(1) -> " << board.Perft(1) << std::endl;
-    
-    /*for (Move move : moves)
+    std::vector<Move> moves = board.GetLegalMoves();
+    for (Move move : moves)
     {
         board.MakeMove(move);
         std::cout << std::endl << "Move: " << move.OriginSquare << " -> " << move.TargetSquare << std::endl;
         board.Print();
         board.MakeMove(Move(move.TargetSquare, move.OriginSquare));
-    }*/
+    }
 }
