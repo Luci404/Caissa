@@ -83,6 +83,12 @@ public:
             //else if (i > 6 * 8 - 1 && i < 8 * 8 + 0) pieces[i] = 'p';
             else pieces[i] = 0x00; 
         }
+
+        for (int i = 0; i < 64; i++)
+        {
+            if (i == 25) pieces[i] = 'R';
+            else pieces[i] = 0x00;
+        }
     }
 
     virtual void Print() const override
@@ -161,7 +167,7 @@ public:
                     else if (std::toupper(pieces[i]) == 'K') piece = 5;
 
                     bool slide[6] = {
-	                    false, false, false, false, false, false
+	                    false, false, true, true, true, false
                     };
 
                     int offset[6][8] = {
@@ -181,7 +187,7 @@ public:
                     {
                         for (uint16_t target = i;;)
                         {
-                            target = mailbox[mailbox64[i] + offset[piece][j]];
+                            target = mailbox[mailbox64[target] + offset[piece][j]];
                             if (target == UINT16_MAX) break; /* Check if target is out of board. */
                             if (std::isupper(pieces[target])) break; /* Check if target is occupied by a friendly piece. */
                             moves.push_back(Move(i, target));
@@ -189,6 +195,11 @@ public:
                         }
                     }
                 }
+            }
+
+            if (true) /*side==WHITE*/
+            {
+                
             }
 
             /*if (pieces[i] == 'P')
@@ -256,13 +267,13 @@ int main(int argc, char* argv[])
     StandardBoard board = StandardBoard(); 
     board.Print();
 
-    std::cout << "Perft(1) -> " << board.Perft(1) << std::endl;
     std::vector<Move> moves = board.GetLegalMoves();
-    for (Move move : moves)
+    std::cout << "Perft(1) -> " << moves.size() << std::endl;
+    /*for (Move move : moves)
     {
         board.MakeMove(move);
         std::cout << std::endl << "Move: " << move.OriginSquare << " -> " << move.TargetSquare << std::endl;
         board.Print();
         board.MakeMove(Move(move.TargetSquare, move.OriginSquare));
-    }
+    }*/
 }
