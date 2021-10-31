@@ -39,14 +39,15 @@ uint16_t mailbox64[64] = {
 struct Move
 {
 public:
-    Move(uint16_t originSquare, uint16_t targetSquare)
-        : OriginSquare(originSquare), TargetSquare(targetSquare)
+    Move(uint16_t originSquare, uint16_t targetSquare, Piece capturePiece = 0x00)
+        : OriginSquare(originSquare), TargetSquare(targetSquare), CapturePiece(capturePiece)
     {
     }
 
 public:
     const uint16_t OriginSquare;
     const uint16_t TargetSquare;
+    const Piece CapturePiece;
 };
 
 class Board 
@@ -125,9 +126,8 @@ public:
 
     virtual void UndoMove(Move move) override
     {
-        // THIS DOES NOT WORK...
         pieces[move.OriginSquare] = pieces[move.TargetSquare];
-        pieces[move.TargetSquare] = 0x00;
+        pieces[move.TargetSquare] = move.CapturePiece;
     }
 
     std::vector<Move> GetLegalMoves() const override
@@ -145,8 +145,8 @@ public:
                     if (COL(i) != 0 && std::islower(pieces[i + 7])) moves.push_back(Move(i, i + 7));
                     if (COL(i) != 0 && std::islower(pieces[i + 9])) moves.push_back(Move(i, i + 9));
                     // Generate white pawn push and long push.
-                    if (pieces[i + 8] == 0x00) moves.push_back(Move(i, i + 8));
-                    if (pieces[i + 16] == 0x00 && i <= 15) moves.push_back(Move(i, i + 16));
+                    if (pieces[i + 8] == 0x00) moves.push_back(Move(i, i + 8, pieces[i + 8]));
+                    if (pieces[i + 16] == 0x00 && i <= 15) moves.push_back(Move(i, i + 16, pieces[i + 16]));
                 }
                 else if (pieces[i] == 'p')
                 {
@@ -154,8 +154,8 @@ public:
                     if (COL(i) != 0 && std::islower(pieces[i - 7])) moves.push_back(Move(i, i - 7));
                     if (COL(i) != 0 && std::islower(pieces[i - 9])) moves.push_back(Move(i, i - 9));
                     // Generate white pawn push and long push.
-                    if (pieces[i - 8] == 0x00) moves.push_back(Move(i, i - 8));
-                    if (pieces[i - 16] == 0x00 && i >= 48) moves.push_back(Move(i, i - 16));
+                    if (pieces[i - 8] == 0x00) moves.push_back(Move(i, i - 8, pieces[i - 8]));
+                    if (pieces[i - 16] == 0x00 && i >= 48) moves.push_back(Move(i, i - 16, pieces[i - 16]));
                 }
                 else
                 {
@@ -190,7 +190,7 @@ public:
                             target = mailbox[mailbox64[target] + offset[piece][j]];
                             if (target == UINT16_MAX) break; /* Check if target is out of board. */
                             if (std::isupper(pieces[target])) break; /* Check if target is occupied by a friendly piece. */
-                            moves.push_back(Move(i, target));
+                            moves.push_back(Move(i, target, pieces[target]));
                             if (!slide[piece]) break;
                         }
                     }
