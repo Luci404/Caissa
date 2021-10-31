@@ -1,6 +1,12 @@
 #include <inttypes.h>
 #include <iostream>
+#include <iomanip>
 #include <vector>
+#include <string>
+#include <sstream>
+#include <iterator>
+#include <memory>
+#include <bits/stdc++.h>
 
 /* TODO: ♙♘♗♖♕♔·♟♞♝♜♛♚ */
 
@@ -261,19 +267,73 @@ public:
     Piece pieces[64];
 };
 
+StandardBoard board;
+
+std::vector<std::string> SplitString(std::string str, std::string token){
+    std::vector<std::string>result;
+    while(str.size())
+    {
+        int index = str.find(token);
+        if(index != std::string::npos){
+            result.push_back(str.substr(0,index));
+            str = str.substr(index+token.size());
+            if(str.size()==0)result.push_back(str);
+        }
+        else
+        {
+            result.push_back(str);
+            str = "";
+        }
+    }
+    return result;
+}
+
+void CommandLoop()
+{
+    // Get command.
+    std::string commandString;
+    std::cout << ">>> ";
+    std::getline(std::cin, commandString);
+    std::transform(commandString.begin(), commandString.end(), commandString.begin(), ::toupper);
+    // std::cout << "COMMAND: " << commandString << std::endl;
+
+    // Get command componenets.
+    std::vector<std::string> commandComponents = SplitString(commandString, " ");
+
+    // Handle command.
+    if (commandComponents.size() > 0)
+    {
+        if (commandComponents[0] == "HELP")
+        {
+            std::cout << std::setw(16) << std::left << "HELP" << std::setw(128) << std::left << "Provides a list of commands and an overview of their function." << std::endl;
+            std::cout << std::setw(16) << std::left << "PRINT" << std::setw(128) << std::left << "Writes the board to the console." << std::endl;
+            std::cout << std::setw(16) << std::left << "MOVE <UCI>" << std::setw(128) << std::left << "Performs a move based on a UCI string." << std::endl;
+            std::cout << std::setw(16) << std::left << "PERFT" << std::setw(128) << std::left << "Performs a move based on a UCI string." << std::endl;
+        }
+        else if (commandComponents[0] == "PRINT") { board.Print(); }
+        else if (commandComponents[0] == "MOVE")
+        {
+
+        }
+        else
+        {
+           std::cout << "Unknown command: " << commandComponents[0] << std::endl; 
+        }
+    }
+
+    // Repeat...
+    CommandLoop();
+}
+
 /* Application */
 int main(int argc, char* argv[])
 {
-    StandardBoard board = StandardBoard(); 
-    board.Print();
+    board = StandardBoard(); 
 
-    std::vector<Move> moves = board.GetLegalMoves();
-    std::cout << "Perft(1) -> " << moves.size() << std::endl;
-    /*for (Move move : moves)
-    {
-        board.MakeMove(move);
-        std::cout << std::endl << "Move: " << move.OriginSquare << " -> " << move.TargetSquare << std::endl;
-        board.Print();
-        board.MakeMove(Move(move.TargetSquare, move.OriginSquare));
-    }*/
+    //std::vector<Move> moves = board.GetLegalMoves();
+    //std::cout << "Perft(1) -> " << moves.size() << std::endl;
+
+    std::cout << "Caissa 1.0.0" << std::endl;
+
+    CommandLoop();
 }
