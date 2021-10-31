@@ -7,6 +7,32 @@
 /* Board Representation */
 typedef uint8_t Piece;
 
+uint16_t mailbox[120] = {
+    UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX,
+    UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX,
+    UINT16_MAX,  0,  1,  2,  3,  4,  5,  6,  7, UINT16_MAX,
+    UINT16_MAX,  8,  9, 10, 11, 12, 13, 14, 15, UINT16_MAX,
+    UINT16_MAX, 16, 17, 18, 19, 20, 21, 22, 23, UINT16_MAX,
+    UINT16_MAX, 24, 25, 26, 27, 28, 29, 30, 31, UINT16_MAX,
+    UINT16_MAX, 32, 33, 34, 35, 36, 37, 38, 39, UINT16_MAX,
+    UINT16_MAX, 40, 41, 42, 43, 44, 45, 46, 47, UINT16_MAX,
+    UINT16_MAX, 48, 49, 50, 51, 52, 53, 54, 55, UINT16_MAX,
+    UINT16_MAX, 56, 57, 58, 59, 60, 61, 62, 63, UINT16_MAX,
+    UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX,
+    UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX
+};
+
+uint16_t mailbox64[64] = {
+    21, 22, 23, 24, 25, 26, 27, 28,
+    31, 32, 33, 34, 35, 36, 37, 38,
+    41, 42, 43, 44, 45, 46, 47, 48,
+    51, 52, 53, 54, 55, 56, 57, 58,
+    61, 62, 63, 64, 65, 66, 67, 68,
+    71, 72, 73, 74, 75, 76, 77, 78,
+    81, 82, 83, 84, 85, 86, 87, 88,
+    91, 92, 93, 94, 95, 96, 97, 98
+};
+
 struct Move
 {
 public:
@@ -99,21 +125,56 @@ public:
 
         for (uint16_t i = 0; i < 64; ++i)
         {
+
             if (pieces[i] == 'P')
             {
-                if (pieces[i + 8] == 0x00) moves.push_back(Move(i, i + 8));
-                if (pieces[i + 8 * 2] == 0x00 && i > 7 && i < 16) moves.push_back(Move(i, i + 8 * 2));
-            }
-            else if (pieces[i] == 'N')
-            {
-                if (pieces[i + 15] == 0x00) moves.push_back(Move(i, i + 15));
-                if (pieces[i + 17] == 0x00) moves.push_back(Move(i, i + 17));
-                if (pieces[i - 15] == 0x00) moves.push_back(Move(i, i - 15));
-                if (pieces[i - 17] == 0x00) moves.push_back(Move(i, i - 17));
                 if (pieces[i + 10] == 0x00) moves.push_back(Move(i, i + 10));
-                if (pieces[i + 6] == 0x00) moves.push_back(Move(i, i + 6));
+                else if (pieces[i + 20] == 0x00 && i > 29 && i < 39) moves.push_back(Move(i, i + 20));
+                else if (pieces[i + 11] != 0x00 && !std::isupper(pieces[i + 11])) moves.push_back(Move(i, i + 11));
+                else if (pieces[i + 9] != 0x00 && !std::isupper(pieces[i + 9])) moves.push_back(Move(i, i + 9));
+            }
+            else if (pieces[i] == 'p')
+            {
                 if (pieces[i - 10] == 0x00) moves.push_back(Move(i, i - 10));
-                if (pieces[i - 6] == 0x00) moves.push_back(Move(i, i - 6));
+                else if (pieces[i - 20] == 0x00 && i > 79 && i < 90) moves.push_back(Move(i, i - 20));
+                else if (pieces[i - 11] != 0x00 && std::isupper(pieces[i - 11])) moves.push_back(Move(i, i - 11));
+                else if (pieces[i - 9] != 0x00 && std::isupper(pieces[i - 9])) moves.push_back(Move(i, i - 9));
+            }
+            else if (pieces[i] == 'N' || pieces[i] == 'n')
+            {
+                // Knight offsets(10x12): { -21, -19, -12, -8, 8, 12, 19, 21 }
+                if (pieces[i - 21] == 0x00) moves.push_back(Move(i, i - 21));
+                else if (pieces[i - 19] == 0x00) moves.push_back(Move(i, i - 19));
+                else if (pieces[i - 12] == 0x00) moves.push_back(Move(i, i - 12));
+                else if (pieces[i - 8] == 0x00) moves.push_back(Move(i, i - 8));
+                else if (pieces[i + 8] == 0x00) moves.push_back(Move(i, i + 8));
+                else if (pieces[i + 12] == 0x00) moves.push_back(Move(i, i + 12));
+                else if (pieces[i + 19] == 0x00) moves.push_back(Move(i, i + 19));
+                else if (pieces[i + 21] == 0x00) moves.push_back(Move(i, i + 21));
+            }
+            else if (pieces[i] == 'K' || pieces[i] == 'k')
+            {
+                // King offsets(10x12): { -11, -10, -9, -1, 1,  9, 10, 11 }
+                if (pieces[i - 11] == 0x00) moves.push_back(Move(i, i - 11));
+                else if (pieces[i - 10] == 0x00) moves.push_back(Move(i, i - 10));
+                else if (pieces[i - 9] == 0x00) moves.push_back(Move(i, i - 9));
+                else if (pieces[i - 1] == 0x00) moves.push_back(Move(i, i - 1));
+                else if (pieces[i + 1] == 0x00) moves.push_back(Move(i, i + 1));
+                else if (pieces[i + 9] == 0x00) moves.push_back(Move(i, i + 9));
+                else if (pieces[i + 10] == 0x00) moves.push_back(Move(i, i + 10));
+                else if (pieces[i + 11] == 0x00) moves.push_back(Move(i, i + 11));
+            }
+            else if (pieces[i] == 'B' || pieces[i] == 'b')
+            {
+                // Bishop offsets(10x12): { -11,  -9,  9, 11, 0,  0,  0,  0 }
+            }
+            else if (pieces[i] == 'R' || pieces[i] == 'r')
+            {
+                // Rook offsets(10x12): { -10,  -1,  1, 10, 0,  0,  0,  0 }
+            }
+            else if (pieces[i] == 'Q' || pieces[i] == 'q')
+            {
+                // Queen offsets(10x12): { -11, -10, -9, -1, 1,  9, 10, 11 }
             }
         }
 
