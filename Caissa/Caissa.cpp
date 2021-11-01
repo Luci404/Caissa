@@ -387,6 +387,12 @@ public:
 public:
     Piece pieces[64];
     bool whiteSideToMove = true;
+
+    /* the en passant square. if white moves e2e4, the en passant
+    square is set to e3, because that's where a pawn would move
+	in an en passant capture */
+    uint16_t enPassantSquare = UINT16_MAX;
+
 };
 
 StandardBoard board;
