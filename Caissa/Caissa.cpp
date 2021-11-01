@@ -121,12 +121,46 @@ public:
      - https://www.chessprogramming.org/Perft
      - https://www.chessprogramming.org/Perft_Results
     */
+    template<bool root>
     uint64_t Perft(int depth)
     {
-        //std::cout << "PERFT" << std::endl;
         uint64_t nodes = 0;
+        uint64_t count = 0;
+
+        const bool leaf = (depth == 2);
+
+        for (Move move : GetLegalMoves())
+        {
+            if (root && depth <= 1)
+            {
+                count = 1;
+                nodes++;
+            }
+            else
+            {
+                MakeMove(move);
+                count = leaf ? GetLegalMoves().size() : Perft<false>(depth - 1);
+                nodes += count;
+                UndoMove(move);
+            }
+
+            if (root)
+            {
+                std::string UCI = "0000";
+                UCI[0] = std::string("abcdefghijklmnopqrstuvwxyz")[COL(move.OriginSquare)];
+                UCI[1] = std::string("123456789")[ROW(move.OriginSquare)];
+                UCI[2] = std::string("abcdefghijklmnopqrstuvwxyz")[COL(move.TargetSquare)];
+                UCI[3] = std::string("123456789")[ROW(move.TargetSquare)];
+                std::cout << UCI << ": " << count << std::endl;
+            }
+        }
         
-        std::vector<Move> moves = GetLegalMoves();
+        return nodes;
+
+        //std::cout << "PERFT" << std::endl;
+        /*uint64_t nodes = 0;
+        
+        std::vector<Move> moves = GetLegalMoves();*/
         /*for (Move move : moves)
         {
             std::string UCI = "0000";
@@ -141,17 +175,17 @@ public:
             UndoMove(move);
         }*/
 
-        if (depth <= 1) { return moves.size(); }
+          /*if (depth <= 1) { return moves.size(); }
 
         for (Move move : moves)
         {
             MakeMove(move);
-            //if (!IsCheck())
-            nodes += Perft(depth - 1);
+            if (!IsCheck())
+                nodes += Perft(depth - 1);
             UndoMove(move);
         }
 
-        return nodes;
+        return nodes;*/
     }
 
     virtual bool IsCheck() const override
@@ -263,7 +297,14 @@ public:
                         {
                             target = mailbox[mailbox64[target] + offset[piece][j]];
                             if (target == UINT16_MAX) break; /* Check if target is out of board. */
-                            if (std::isupper(pieces[target]) && whiteSideToMove || std::islower(pieces[target]) && !whiteSideToMove) break; /* Check if target is occupied by a friendly piece. */
+                            if (pieces[target] != 0x00)
+                            {
+                                if (std::isupper(pieces[target]) && !whiteSideToMove || std::islower(pieces[target]) && whiteSideToMove)
+                                {
+                                    moves.push_back(Move(i, target, pieces[target]));
+                                }
+                                break;
+                            }
                             moves.push_back(Move(i, target, pieces[target]));
                             if (!slide[piece]) break;
                         }
@@ -382,8 +423,11 @@ void CommandLoop()
                 uint16_t originRank = std::string("123456789").find(commandComponents[1][1]);
                 uint16_t targetFile = std::string("abcdefghijklmnopqrstuvwxyz").find(std::tolower(commandComponents[1][2]));
                 uint16_t targetRank = std::string("123456789").find(commandComponents[1][3]);
+                uint16_t originIndex = originRank * 8 + originFile;
+                uint16_t targetIndex = targetRank * 8 + targetFile;
 
-                std::cout << "Not implemented." << std::endl;
+                Move move = Move(originIndex, targetIndex, board.pieces[targetIndex]);
+                board.MakeMove(move);
             }
             else
             {
@@ -395,7 +439,7 @@ void CommandLoop()
             if (commandComponents.size() > 1)
             {
                 uint16_t depth = std::stoi(commandComponents[1]);
-                std::cout << "Perft(" << depth << "): " << board.Perft(depth) << std::endl;
+                std::cout << "Perft(" << depth << "): " << board.Perft<true>(depth) << std::endl;
                 /*std::vector<Move> moves = board.GetLegalMoves();
                 for (Move move : moves)
                 {
@@ -412,6 +456,20 @@ void CommandLoop()
             else
             {
                 std::cout << "The syntax of the command is incorrect." << std::endl;
+            }
+        }
+        else if (commandComponents[0] == "LEGALMOVES")
+        {
+            std::vector<Move> moves = board.GetLegalMoves();
+            for (Move move : moves)
+            {
+                std::string UCI = "0000";
+                UCI[0] = std::string("abcdefghijklmnopqrstuvwxyz")[COL(move.OriginSquare)];
+                UCI[1] = std::string("123456789")[ROW(move.OriginSquare)];
+                UCI[2] = std::string("abcdefghijklmnopqrstuvwxyz")[COL(move.TargetSquare)];
+                UCI[3] = std::string("123456789")[ROW(move.TargetSquare)];
+
+                std::cout << UCI << std::endl;
             }
         }
         else
