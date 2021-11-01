@@ -91,11 +91,11 @@ public:
             else pieces[i] = 0x00; 
         }
 
-        for (int i = 0; i < 64; i++)
+        /*for (int i = 0; i < 64; i++)
         {
             if (i == 25) pieces[i] = 'R';
             else pieces[i] = 0x00;
-        }
+        }*/
     }
 
     virtual void Print() const override
@@ -115,11 +115,25 @@ public:
         std::cout << "+-- a b c d e f g h --+" << std::endl;
     }
 
+    /*
+    Counts all the leaf nodes of a certain depth.
+     - https://www.chessprogramming.org/Perft
+     - https://www.chessprogramming.org/Perft_Results
+    */
     uint64_t Perft(int depth)
     {
         uint64_t nodes = 0;
+        
+        std::vector<Move> moves = GetLegalMoves();
 
-        if (depth == 1)  { return GetLegalMoves().size(); }
+        if (depth <= 1) { return moves.size(); }
+
+        for (Move move : moves)
+        {
+            MakeMove(move);
+            nodes += Perft(depth - 1);
+            UndoMove(move);
+        }
 
         return nodes;
     }
@@ -305,15 +319,39 @@ void CommandLoop()
     {
         if (commandComponents[0] == "HELP")
         {
-            std::cout << std::setw(16) << std::left << "HELP" << std::setw(128) << std::left << "Provides a list of commands and an overview of their function." << std::endl;
-            std::cout << std::setw(16) << std::left << "PRINT" << std::setw(128) << std::left << "Writes the board to the console." << std::endl;
-            std::cout << std::setw(16) << std::left << "MOVE <UCI>" << std::setw(128) << std::left << "Performs a move based on a UCI string." << std::endl;
-            std::cout << std::setw(16) << std::left << "PERFT" << std::setw(128) << std::left << "Performs a move based on a UCI string." << std::endl;
+            std::cout << "HELP              " << "Provides a list of commands and an overview of their function." << std::endl;
+            std::cout << "PRINT             " << "Writes the board to the console." << std::endl;
+            std::cout << "MOVE <UCI>        " << "Performs a move based on a UCI string." << std::endl;
+            std::cout << "PERFT <DEPTH>     " << "Count all the leaf nodes of a certain depth." << std::endl;
         }
         else if (commandComponents[0] == "PRINT") { board.Print(); }
         else if (commandComponents[0] == "MOVE")
         {
+            if (commandComponents.size() > 1 && commandComponents[1].size() == 4)
+            {
+                uint16_t originFile = std::string("abcdefghijklmnopqrstuvwxyz").find(std::tolower(commandComponents[1][0]));
+                uint16_t originRank = std::string("123456789").find(commandComponents[1][1]);
+                uint16_t targetFile = std::string("abcdefghijklmnopqrstuvwxyz").find(std::tolower(commandComponents[1][2]));
+                uint16_t targetRank = std::string("123456789").find(commandComponents[1][3]);
 
+                std::cout << "Not implemented." << std::endl;
+            }
+            else
+            {
+                std::cout << "The syntax of the command is incorrect." << std::endl;
+            }
+        }
+        else if (commandComponents[0] == "PERFT")
+        {
+            if (commandComponents.size() > 1)
+            {
+                uint16_t depth = std::stoi(commandComponents[1]);
+                std::cout << "Perft(" << depth << "): " << board.Perft(depth) << std::endl;
+            }
+            else
+            {
+                std::cout << "The syntax of the command is incorrect." << std::endl;
+            }
         }
         else
         {
