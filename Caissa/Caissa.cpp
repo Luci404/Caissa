@@ -42,11 +42,19 @@ uint16_t mailbox64[64] = {
 #define ROW(x)			(x >> 3)
 #define COL(x)			(x & 7)
 
+enum MoveType : uint8_t
+{
+    NORMAL,
+    PROMOTION,
+    EN_PASSANT,
+    CASTLING
+};
+
 struct Move
 {
 public:
-    Move(uint16_t originSquare, uint16_t targetSquare, Piece capturePiece = 0x00)
-        : OriginSquare(originSquare), TargetSquare(targetSquare), CapturePiece(capturePiece)
+    Move(uint16_t originSquare, uint16_t targetSquare, Piece capturePiece = 0x00, MoveType moveType = MoveType::NORMAL)
+        : OriginSquare(originSquare), TargetSquare(targetSquare), CapturePiece(capturePiece), MoveType(moveType)
     {
     }
 
@@ -54,6 +62,7 @@ public:
     const uint16_t OriginSquare;
     const uint16_t TargetSquare;
     const Piece CapturePiece;
+    const uint8_t MoveType;
 };
 
 class Board 
@@ -362,6 +371,15 @@ public:
                 // Queen offsets(10x12): { -11, -10, -9, -1, 1,  9, 10, 11 }
             }*/
         }
+
+        // Generate castle moves.
+        if (whiteSideToMove)
+        {
+
+        }
+
+        // Generate en passant moves.
+
 
         return moves;
     }
