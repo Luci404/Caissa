@@ -122,9 +122,18 @@ public:
     */
     uint64_t Perft(int depth)
     {
+        std::cout << "PERFT" << std::endl;
         uint64_t nodes = 0;
         
         std::vector<Move> moves = GetLegalMoves();
+        for (Move move : moves)
+        {
+            MakeMove(move);
+            Print();
+            UndoMove(move);
+
+        }
+
 
         if (depth <= 1) { return moves.size(); }
 
@@ -140,12 +149,14 @@ public:
 
     virtual void MakeMove(Move move) override
     {
+        side = !std::isupper(move.OriginSquare);
         pieces[move.TargetSquare] = pieces[move.OriginSquare];
         pieces[move.OriginSquare] = 0x00;
     }
 
     virtual void UndoMove(Move move) override
     {
+        side = std::isupper(move.OriginSquare);
         pieces[move.OriginSquare] = pieces[move.TargetSquare];
         pieces[move.TargetSquare] = move.CapturePiece;
     }
@@ -156,7 +167,7 @@ public:
 
         for (uint16_t i = 0; i < 64; ++i)
         {
-            if (std::isupper(pieces[i]) /* White side to move. */)
+            if (std::isupper(pieces[i]) && side)
             {
                 if (pieces[i] == 'P')
                 {
@@ -165,8 +176,11 @@ public:
                     if (COL(i) != 0 && std::islower(pieces[i + 7])) moves.push_back(Move(i, i + 7));
                     if (COL(i) != 0 && std::islower(pieces[i + 9])) moves.push_back(Move(i, i + 9));
                     // Generate white pawn push and long push.
-                    if (pieces[i + 8] == 0x00) moves.push_back(Move(i, i + 8, pieces[i + 8]));
-                    if (pieces[i + 16] == 0x00 && i <= 15) moves.push_back(Move(i, i + 16, pieces[i + 16]));
+                    if (pieces[i + 8] == 0x00)
+                    {
+                        moves.push_back(Move(i, i + 8, pieces[i + 8]));
+                        if (pieces[i + 16] == 0x00 && i <= 15) moves.push_back(Move(i, i + 16, pieces[i + 16]));
+                    }
                 }
                 else if (pieces[i] == 'p')
                 {
@@ -174,8 +188,11 @@ public:
                     if (COL(i) != 0 && std::islower(pieces[i - 7])) moves.push_back(Move(i, i - 7));
                     if (COL(i) != 0 && std::islower(pieces[i - 9])) moves.push_back(Move(i, i - 9));
                     // Generate white pawn push and long push.
-                    if (pieces[i - 8] == 0x00) moves.push_back(Move(i, i - 8, pieces[i - 8]));
-                    if (pieces[i - 16] == 0x00 && i >= 48) moves.push_back(Move(i, i - 16, pieces[i - 16]));
+                    if (pieces[i - 8] == 0x00)
+                    {
+                        moves.push_back(Move(i, i - 8, pieces[i - 8]));
+                        if (pieces[i - 16] == 0x00 && i >= 48) moves.push_back(Move(i, i - 16, pieces[i - 16]));
+                    }
                 }
                 else
                 {
@@ -209,19 +226,13 @@ public:
                         {
                             target = mailbox[mailbox64[target] + offset[piece][j]];
                             if (target == UINT16_MAX) break; /* Check if target is out of board. */
-                            if (std::isupper(pieces[target])) break; /* Check if target is occupied by a friendly piece. */
+                            if (std::isupper(pieces[target]) && side) break; /* Check if target is occupied by a friendly piece. */
                             moves.push_back(Move(i, target, pieces[target]));
                             if (!slide[piece]) break;
                         }
                     }
                 }
             }
-
-            if (true) /*side==WHITE*/
-            {
-                
-            }
-
             /*if (pieces[i] == 'P')
             {
                 if (pieces[i + 10] == 0x00) moves.push_back(Move(i, i + 10));
@@ -279,6 +290,7 @@ public:
 
 public:
     Piece pieces[64];
+    bool side;
 };
 
 StandardBoard board;
