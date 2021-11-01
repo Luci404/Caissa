@@ -104,12 +104,12 @@ public:
         std::cout << "|                     |" << std::endl;
         for (int16_t rank = 7; rank >= 0; rank--)
         {
-            std::cout << rank << "   ";
+            std::cout << rank+1 << "   ";
             for (uint16_t file = 0; file < 8; file++) 
             {
                 std::cout << (char)(pieces[rank * 8 + file] == 0x00 ? '-' : pieces[rank * 8 + file]) << " ";
             }
-            std::cout << "  " << rank << std::endl;
+            std::cout << "  " << rank+1 << std::endl;
         }
         std::cout << "|                     |" << std::endl;
         std::cout << "+-- a b c d e f g h --+" << std::endl;
@@ -122,16 +122,22 @@ public:
     */
     uint64_t Perft(int depth)
     {
-        std::cout << "PERFT" << std::endl;
+        //std::cout << "PERFT" << std::endl;
         uint64_t nodes = 0;
         
         std::vector<Move> moves = GetLegalMoves();
         for (Move move : moves)
         {
+            std::string UCI = "0000";
+            UCI[0] = std::string("abcdefghijklmnopqrstuvwxyz")[COL(move.OriginSquare)];
+            UCI[1] = std::string("123456789")[ROW(move.OriginSquare)];
+            UCI[2] = std::string("abcdefghijklmnopqrstuvwxyz")[COL(move.TargetSquare)];
+            UCI[3] = std::string("123456789")[ROW(move.TargetSquare)];
+            std::cout << move.OriginSquare << "->" << move.TargetSquare << " (" << UCI << ")" << std::endl;
+
             MakeMove(move);
             Print();
             UndoMove(move);
-
         }
 
 
@@ -167,7 +173,7 @@ public:
 
         for (uint16_t i = 0; i < 64; ++i)
         {
-            if (std::isupper(pieces[i]) && side)
+            if (std::isupper(pieces[i]) == side)
             {
                 if (pieces[i] == 'P')
                 {
@@ -185,8 +191,8 @@ public:
                 else if (pieces[i] == 'p')
                 {
                     // Generate white pawn captures.
-                    if (COL(i) != 0 && std::islower(pieces[i - 7])) moves.push_back(Move(i, i - 7));
-                    if (COL(i) != 0 && std::islower(pieces[i - 9])) moves.push_back(Move(i, i - 9));
+                    if (COL(i) != 0 && std::isupper(pieces[i - 7])) moves.push_back(Move(i, i - 7));
+                    if (COL(i) != 0 && std::isupper(pieces[i - 9])) moves.push_back(Move(i, i - 9));
                     // Generate white pawn push and long push.
                     if (pieces[i - 8] == 0x00)
                     {
@@ -226,7 +232,7 @@ public:
                         {
                             target = mailbox[mailbox64[target] + offset[piece][j]];
                             if (target == UINT16_MAX) break; /* Check if target is out of board. */
-                            if (std::isupper(pieces[target]) && side) break; /* Check if target is occupied by a friendly piece. */
+                            if (std::isupper(pieces[target]) && side || std::islower(pieces[target]) && !side) break; /* Check if target is occupied by a friendly piece. */
                             moves.push_back(Move(i, target, pieces[target]));
                             if (!slide[piece]) break;
                         }
@@ -290,7 +296,7 @@ public:
 
 public:
     Piece pieces[64];
-    bool side;
+    bool side = false;
 };
 
 StandardBoard board;
@@ -359,6 +365,18 @@ void CommandLoop()
             {
                 uint16_t depth = std::stoi(commandComponents[1]);
                 std::cout << "Perft(" << depth << "): " << board.Perft(depth) << std::endl;
+                /*std::vector<Move> moves = board.GetLegalMoves();
+                for (Move move : moves)
+                {
+                    std::string UCI = "0000";
+                    UCI[0] = std::string("abcdefghijklmnopqrstuvwxyz")[COL(move.OriginSquare)];
+                    UCI[1] = std::string("123456789")[ROW(move.OriginSquare)];
+                    UCI[2] = std::string("abcdefghijklmnopqrstuvwxyz")[COL(move.TargetSquare)];
+                    UCI[3] = std::string("123456789")[ROW(move.TargetSquare)];
+                    board.MakeMove(move);
+                    std::cout << UCI << ": " << board.Perft(depth) << std::endl;
+                    board.UndoMove(move);
+                }*/
             }
             else
             {
