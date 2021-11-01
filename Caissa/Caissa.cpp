@@ -245,7 +245,7 @@ public:
                     //std::cout << i << " - "<< COL(i) << ", " << ROW(i) << std::endl;
                     // Generate white pawn captures.
                     if (COL(i) != 0 && std::islower(pieces[i + 7])) moves.push_back(Move(i, i + 7, pieces[i + 7]));
-                    if (COL(i) != 0 && std::islower(pieces[i + 9])) moves.push_back(Move(i, i + 9, pieces[i + 9]));
+                    if (COL(i) != 7 && std::islower(pieces[i + 9])) moves.push_back(Move(i, i + 9, pieces[i + 9]));
                     // Generate white pawn push and long push.
                     if (pieces[i + 8] == 0x00)
                     {
