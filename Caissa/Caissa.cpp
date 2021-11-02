@@ -90,6 +90,40 @@ namespace Caissa
     class StandardBoard : public Position
     {
     public:
+        StandardBoard(std::string fen)
+        {           
+            // Initialize piece array.
+            for (uint16_t i = 0; i < 64; ++i)
+            {
+                pieces[i] = 0x00;
+            }
+
+            // Parse FEN.
+            std::istringstream ss(fen);
+            uint16_t square = 0;
+            uint8_t token;
+
+            std::cout << fen << std::endl;
+
+            while ((ss >> token) && !std::isspace(token))
+            {
+                std::cout << (char)token << " - " << (int)square << std::endl;
+                if (std::isdigit(token))
+                {
+                    square += (token - '0') * 1;
+                }
+                else if (token == '/')
+                {
+                    continue;
+                }
+                else if (token != std::string::npos)
+                {
+                    pieces[square] = token;
+                    ++square;
+                }
+            }
+        }
+
         StandardBoard()
         {
             // Init
@@ -486,7 +520,7 @@ void CommandLoop()
 /* Application */
 int main(int argc, char *argv[])
 {
-    board = Caissa::StandardBoard();
+    board = Caissa::StandardBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 
     std::cout << "Caissa 1.0.0" << std::endl;
 
