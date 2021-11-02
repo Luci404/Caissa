@@ -240,7 +240,7 @@ namespace Caissa
 
             for (int16_t rank = 7; rank >= 0; rank--)
             {
-                for (uint16_t file = 0; file < 8; file++)
+                for (uint16_t file = 0; file <= 7; file++)
                 {
                     for (emptyCount = 0; file <= 7 && pieces[rank * 8 + file] == 0x00; ++file)
                     {
@@ -252,7 +252,7 @@ namespace Caissa
                         ss << emptyCount;
                     }
 
-                    if (file < 7)
+                    if (file <= 7)
                     {
                         ss << pieces[rank * 8 + file];
                     }
