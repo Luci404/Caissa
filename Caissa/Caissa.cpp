@@ -103,11 +103,8 @@ namespace Caissa
             uint16_t square = 0;
             uint8_t token;
 
-            std::cout << fen << std::endl;
-
             while ((ss >> token) && !std::isspace(token))
             {
-                std::cout << (char)token << " - " << (int)square << std::endl;
                 if (std::isdigit(token))
                 {
                     square += (token - '0') * 1;
