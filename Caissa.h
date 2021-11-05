@@ -63,6 +63,7 @@ namespace Caissa
     template<GenType T>
     struct MoveList
     {
+        // Find stuff.
     };*/
 
     struct Move
