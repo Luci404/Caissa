@@ -236,6 +236,13 @@ namespace Caissa
                 ss << rank + 1 << "   ";
                 for (uint16_t file = 0; file < 8; file++)
                 {
+                    if (rank * 8 + file == enPassantIndex)
+                    {
+                        ss << "ep";
+                    }
+                    
+                    // ss << rank * 8 + file;
+                
                     ss << (char)(pieces[rank * 8 + file] == 0x00 ? '-' : pieces[rank * 8 + file]) << " ";
                 }
                 ss << "  " << rank + 1 << std::endl;
@@ -264,10 +271,37 @@ namespace Caissa
             whiteSideToMove = (bool)std::islower(pieces[move.OriginIndex]);
             pieces[move.TargetIndex] = pieces[move.OriginIndex];
             pieces[move.OriginIndex] = 0x00;
+            
+            // Double pawn push
+            if (std::toupper(pieces[move.TargetIndex]) == 'P' && abs(ROW(move.OriginIndex) - ROW(move.TargetIndex)) == 2)
+            {
+                oldEnPassantIndex = enPassantIndex;
+                enPassantIndex = whiteSideToMove ? move.TargetIndex + 8 : move.TargetIndex - 8;
+            }
+            else
+            {
+                oldEnPassantIndex = enPassantIndex;
+                enPassantIndex = UINT32_MAX;
+            }
+
+            // En passant
+            
         }
 
         virtual void UndoMove(Move move) override
         {
+            // Double pawn push
+            if (std::toupper(pieces[move.TargetIndex]) == 'P' && abs(ROW(move.OriginIndex) - ROW(move.TargetIndex)) == 2)
+            {
+                enPassantIndex = oldEnPassantIndex;
+                oldEnPassantIndex = UINT16_MAX;
+            }
+            else
+            {
+                enPassantIndex = UINT32_MAX;
+                oldEnPassantIndex = enPassantIndex;
+            }
+
             pieces[move.OriginIndex] = pieces[move.TargetIndex];
             pieces[move.TargetIndex] = move.CapturePiece;
             whiteSideToMove = (bool)std::isupper(pieces[move.OriginIndex]);
@@ -367,13 +401,29 @@ namespace Caissa
             }
 
             // TODO: Generate castle moves.
-            // TODO: Generate en passant moves.
+            
+            // Generate en passant moves.
+            if (enPassantIndex != UINT32_MAX)
+            {
+                if (whiteSideToMove)
+                {
+                    if (pieces[enPassantIndex - 7] == 'P') moves.push_back(Move(enPassantIndex - 7, enPassantIndex, pieces[enPassantIndex]));
+                    else if (pieces[enPassantIndex - 9] == 'P') moves.push_back(Move(enPassantIndex - 9, enPassantIndex, pieces[enPassantIndex]));
+                }
+                else
+                {
+                    if (pieces[enPassantIndex + 7] == 'p') moves.push_back(Move(enPassantIndex + 7, enPassantIndex, pieces[enPassantIndex]));
+                    else if (pieces[enPassantIndex + 9] == 'p') moves.push_back(Move(enPassantIndex + 9, enPassantIndex, pieces[enPassantIndex]));
+                }
+            }
 
             return moves;
         }
 
     public:
         Piece pieces[64];
+        uint32_t enPassantIndex = UINT32_MAX;
+        uint32_t oldEnPassantIndex = UINT32_MAX; // Old is ONLY for undo move.
         bool whiteSideToMove = true;
     };
 }
