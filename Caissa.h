@@ -135,7 +135,7 @@ namespace Caissa
             std::vector<Move> moves = GetLegalMoves();
             for (Move move : moves)
             {
-                if (move.TargetIndex == squareIndex && std::isupper(move.OriginIndex) == side)
+                if (move.TargetIndex == squareIndex && (bool)std::isupper(move.OriginIndex) == side)
                 {
                     return true;
                 }
@@ -250,7 +250,7 @@ namespace Caissa
         {
             for (uint16_t i = 0; i < 64; ++i)
             {
-                if (std::toupper(pieces[i]) == 'K' && std::isupper(pieces[i]) == whiteSideToMove)
+                if (std::toupper(pieces[i]) == 'K' && (bool)std::isupper(pieces[i]) == whiteSideToMove)
                 {
                     return IsAttacking(i, !whiteSideToMove);
                 }
@@ -261,7 +261,7 @@ namespace Caissa
 
         virtual void MakeMove(Move move) override
         {
-            whiteSideToMove = std::islower(pieces[move.OriginIndex]);
+            whiteSideToMove = (bool)std::islower(pieces[move.OriginIndex]);
             pieces[move.TargetIndex] = pieces[move.OriginIndex];
             pieces[move.OriginIndex] = 0x00;
         }
@@ -270,7 +270,7 @@ namespace Caissa
         {
             pieces[move.OriginIndex] = pieces[move.TargetIndex];
             pieces[move.TargetIndex] = move.CapturePiece;
-            whiteSideToMove = std::isupper(pieces[move.OriginIndex]);
+            whiteSideToMove = (bool)std::isupper(pieces[move.OriginIndex]);
         }
 
         std::vector<Move> GetLegalMoves() const override
@@ -279,7 +279,7 @@ namespace Caissa
 
             for (uint16_t i = 0; i < 64; ++i)
             {
-                if (std::isupper(pieces[i]) == whiteSideToMove)
+                if ((bool)std::isupper(pieces[i]) == whiteSideToMove)
                 {
                     if (pieces[i] == 'P')
                     {
