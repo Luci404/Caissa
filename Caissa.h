@@ -103,6 +103,11 @@ namespace Caissa
             }
 
             // Parse FEN.
+            for (uint16_t i = 0; i < 64; ++i)
+            {
+
+            }
+
             std::reverse(fen.begin(), fen.end());
             std::istringstream ss(fen);
             uint16_t square = 0;
@@ -269,6 +274,29 @@ namespace Caissa
         virtual void MakeMove(Move move) override
         {
             whiteSideToMove = (bool)std::islower(pieces[move.OriginIndex]);
+
+            // Castling
+            if (move.Type == MoveType::CASTLING)
+            {
+                if (COL(move.OriginIndex) > COL(move.TargetIndex))
+                {
+                    pieces[move.OriginIndex - 1] = std::isupper(pieces[move.OriginIndex]) ? 'R' : 'r';
+                    pieces[move.OriginIndex - 2] = std::isupper(pieces[move.OriginIndex]) ? 'K' : 'k';
+                    pieces[move.OriginIndex - 0] = 0x00;
+                    pieces[move.OriginIndex - 4] = 0x00;
+
+                }
+                else
+                {
+                    pieces[move.OriginIndex + 1] = std::isupper(pieces[move.OriginIndex]) ? 'R' : 'r';
+                    pieces[move.OriginIndex + 2] = std::isupper(pieces[move.OriginIndex]) ? 'K' : 'k';
+                    pieces[move.OriginIndex + 0] = 0x00;
+                    pieces[move.OriginIndex + 3] = 0x00;    
+                }
+
+                return;
+            }
+
             pieces[move.TargetIndex] = pieces[move.OriginIndex];
             pieces[move.OriginIndex] = 0x00;
             
@@ -298,12 +326,10 @@ namespace Caissa
                     pieces[move.TargetIndex - 8] = 0x00;
                 }
             }
-            
         }
 
         virtual void UndoMove(Move move) override
         {
-
             // En passant
             if (move.Type == MoveType::EN_PASSANT)
             {
@@ -340,7 +366,7 @@ namespace Caissa
         {
             std::vector<Move> moves;
 
-            for (uint16_t i = 0; i < 64; ++i)
+         /*   for (uint16_t i = 0; i < 64; ++i)
             {
                 if ((bool)std::isupper(pieces[i]) == whiteSideToMove)
                 {
@@ -411,8 +437,8 @@ namespace Caissa
                             {
                                 target = mailbox[mailbox64[target] + offset[piece][j]];
                                 if (target == UINT16_MAX)
-                                    break; /* Check if target is out of board. */
-                                if (pieces[target] != 0x00)
+                                    break;*/ /* Check if target is out of board. */
+                                /*if (pieces[target] != 0x00)
                                 {
                                     if (std::isupper(pieces[target]) && !whiteSideToMove || std::islower(pieces[target]) && whiteSideToMove)
                                     {
@@ -427,10 +453,20 @@ namespace Caissa
                         }
                     }
                 }
+            }*/
+
+            // Generate castle moves.
+            if (whiteSideToMove)
+            {
+                if (whiteShortCastle) moves.push_back(Move(4, 6, 0x00, MoveType::CASTLING));
+                if (whiteLongCastle) moves.push_back(Move(4, 2, 0x00, MoveType::CASTLING));
+            }
+            else
+            {
+                if (blackShortCastle) moves.push_back(Move(60, 62, 0x00, MoveType::CASTLING));
+                if (blackLongCastle) moves.push_back(Move(60, 58, 0x00, MoveType::CASTLING));
             }
 
-            // TODO: Generate castle moves.
-            
             // Generate en passant moves.
             if (enPassantIndex != UINT32_MAX)
             {
@@ -454,5 +490,9 @@ namespace Caissa
         uint32_t enPassantIndex = UINT32_MAX;
         uint32_t oldEnPassantIndex = UINT32_MAX; // Old is ONLY for undo move.
         bool whiteSideToMove = true;
+        bool whiteShortCastle = true;
+        bool whiteLongCastle = true;
+        bool blackShortCastle = true;
+        bool blackLongCastle = true;
     };
 }
