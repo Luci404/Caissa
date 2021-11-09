@@ -70,7 +70,7 @@ namespace Caissa
     {
     public:
         Move(uint16_t originIndex, uint16_t targetIndex, Piece capturePiece = 0x00, MoveType moveType = MoveType::NORMAL)
-            : OriginIndex(originIndex), TargetIndex(targetIndex), CapturePiece(capturePiece), MoveType(moveType)
+            : OriginIndex(originIndex), TargetIndex(targetIndex), CapturePiece(capturePiece), Type(moveType)
         {
         }
 
@@ -78,7 +78,7 @@ namespace Caissa
         const uint16_t OriginIndex;
         const uint16_t TargetIndex;
         const Piece CapturePiece;
-        const uint8_t MoveType;
+        const MoveType Type;
     };
 
     class Position
@@ -285,11 +285,40 @@ namespace Caissa
             }
 
             // En passant
+            if (move.Type == MoveType::EN_PASSANT)
+            {
+                if (std::isupper(move.CapturePiece))
+                {
+                    // White piece captured
+                    pieces[move.TargetIndex + 8] = 0x00;
+                }
+                else
+                {
+                    // Black piece captured
+                    pieces[move.TargetIndex - 8] = 0x00;
+                }
+            }
             
         }
 
         virtual void UndoMove(Move move) override
         {
+
+            // En passant
+            if (move.Type == MoveType::EN_PASSANT)
+            {
+                if (std::isupper(move.CapturePiece))
+                {
+                    // White piece captured
+                    pieces[move.TargetIndex + 8] = move.CapturePiece;
+                }
+                else
+                {
+                    // Black piece captured
+                    pieces[move.TargetIndex - 8] = move.CapturePiece;
+                }
+            }
+
             // Double pawn push
             if (std::toupper(pieces[move.TargetIndex]) == 'P' && abs(ROW(move.OriginIndex) - ROW(move.TargetIndex)) == 2)
             {
@@ -298,12 +327,12 @@ namespace Caissa
             }
             else
             {
-                enPassantIndex = UINT32_MAX;
-                oldEnPassantIndex = enPassantIndex;
+                enPassantIndex = oldEnPassantIndex;
+                oldEnPassantIndex = UINT32_MAX;
             }
 
             pieces[move.OriginIndex] = pieces[move.TargetIndex];
-            pieces[move.TargetIndex] = move.CapturePiece;
+            pieces[move.TargetIndex] = move.Type == MoveType::EN_PASSANT ? 0x00 : move.CapturePiece;
             whiteSideToMove = (bool)std::isupper(pieces[move.OriginIndex]);
         }
 
@@ -407,13 +436,13 @@ namespace Caissa
             {
                 if (whiteSideToMove)
                 {
-                    if (pieces[enPassantIndex - 7] == 'P') moves.push_back(Move(enPassantIndex - 7, enPassantIndex, pieces[enPassantIndex]));
-                    else if (pieces[enPassantIndex - 9] == 'P') moves.push_back(Move(enPassantIndex - 9, enPassantIndex, pieces[enPassantIndex]));
+                    if (pieces[enPassantIndex - 7] == 'P') moves.push_back(Move(enPassantIndex - 7, enPassantIndex, pieces[enPassantIndex - 8], MoveType::EN_PASSANT));
+                    else if (pieces[enPassantIndex - 9] == 'P') moves.push_back(Move(enPassantIndex - 9, enPassantIndex, pieces[enPassantIndex - 8], MoveType::EN_PASSANT));
                 }
                 else
                 {
-                    if (pieces[enPassantIndex + 7] == 'p') moves.push_back(Move(enPassantIndex + 7, enPassantIndex, pieces[enPassantIndex]));
-                    else if (pieces[enPassantIndex + 9] == 'p') moves.push_back(Move(enPassantIndex + 9, enPassantIndex, pieces[enPassantIndex]));
+                    if (pieces[enPassantIndex + 7] == 'p') moves.push_back(Move(enPassantIndex + 7, enPassantIndex, pieces[enPassantIndex + 8], MoveType::EN_PASSANT));
+                    else if (pieces[enPassantIndex + 9] == 'p') moves.push_back(Move(enPassantIndex + 9, enPassantIndex, pieces[enPassantIndex + 8], MoveType::EN_PASSANT));
                 }
             }
 
