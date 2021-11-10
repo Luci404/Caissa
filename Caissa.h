@@ -366,7 +366,7 @@ namespace Caissa
         {
             std::vector<Move> moves;
 
-         /*   for (uint16_t i = 0; i < 64; ++i)
+            for (uint16_t i = 0; i < 64; ++i)
             {
                 if ((bool)std::isupper(pieces[i]) == whiteSideToMove)
                 {
@@ -437,8 +437,8 @@ namespace Caissa
                             {
                                 target = mailbox[mailbox64[target] + offset[piece][j]];
                                 if (target == UINT16_MAX)
-                                    break;*/ /* Check if target is out of board. */
-                                /*if (pieces[target] != 0x00)
+                                    break; /* Check if target is out of board. */
+                                if (pieces[target] != 0x00)
                                 {
                                     if (std::isupper(pieces[target]) && !whiteSideToMove || std::islower(pieces[target]) && whiteSideToMove)
                                     {
@@ -453,7 +453,7 @@ namespace Caissa
                         }
                     }
                 }
-            }*/
+            }
 
             // Generate castle moves.
             if (whiteSideToMove)
