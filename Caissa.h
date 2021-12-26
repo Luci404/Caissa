@@ -42,13 +42,15 @@ namespace Caissa
         91, 92, 93, 94, 95, 96, 97, 98};
 
     typedef uint8_t Piece;
-
+    typedef uint16_t Square;
+    
     enum MoveType : uint8_t
     {
         NORMAL,
         PROMOTION,
         EN_PASSANT,
-        CASTLING
+        CASTLING,
+        SET_PIECE
     };
 
     /*enum GenType {
@@ -74,11 +76,14 @@ namespace Caissa
         {
         }
 
+        
+
     public:
-        const uint16_t OriginIndex;
-        const uint16_t TargetIndex;
-        const Piece CapturePiece;
-        const MoveType Type;
+        // TODO: These should all be const
+        uint16_t OriginIndex;
+        uint16_t TargetIndex;
+        Piece CapturePiece;
+        MoveType Type;
     };
 
     class Position
@@ -185,6 +190,7 @@ namespace Caissa
 
             return ss.str();
         }
+        
         /*
         Perft is a utility for verifying move generation.
         All the leaf nodes up to the given depth are generated and counted, and the sum is returned.
@@ -225,6 +231,14 @@ namespace Caissa
             }
 
             return nodes;
+        }
+
+        void SetPiece(Piece piece, Square targetSquare)
+        {
+            if (targetSquare < 64)
+            {
+                pieces[targetSquare] = piece;
+            }
         }
 
         /*
