@@ -76,7 +76,10 @@ namespace Caissa
         {
         }
 
-        
+        bool IsEqual(const Move& other) const
+        {
+            return OriginIndex == other.TargetIndex && TargetIndex == other.TargetIndex && CapturePiece == other.CapturePiece && Type == other.Type;
+        }
 
     public:
         // TODO: These should all be const
