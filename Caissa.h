@@ -136,14 +136,6 @@ namespace Caissa
 		PieceTeam Team;
 	};
 
-	bool operator==(const Piece& left, const Piece& right) {
-		return left.IsEqual(right);
-	}
-
-
-	Piece NonePiece = Piece(PieceType::NONE, PieceTeam::NONE);
-
-
 	enum MoveType : uint8_t
 	{
 		NORMAL,
@@ -178,7 +170,7 @@ namespace Caissa
 
 		bool IsEqual(const Move& other) const
 		{
-			return OriginIndex == other.OriginIndex && TargetIndex == other.TargetIndex && CapturePiece == other.CapturePiece && Type == other.Type;
+			return OriginIndex == other.OriginIndex && TargetIndex == other.TargetIndex && CapturePiece.IsEqual(other.CapturePiece) && Type == other.Type;
 		}
 
 		std::string ToString()
@@ -254,7 +246,7 @@ namespace Caissa
 			// Initialize piece array.
 			for (uint16_t i = 0; i < 64; ++i)
 			{
-				pieces[i] = NonePiece;
+				pieces[i] = Piece(PieceType::NONE, PieceTeam::NONE);
 			}
 
 			// Parse FEN.
@@ -316,7 +308,7 @@ namespace Caissa
 			{
 				for (uint16_t file = 0; file <= 7; file++)
 				{
-					for (emptyCount = 0; file <= 7 && pieces[rank * 8 + file] == NonePiece; ++file)
+					for (emptyCount = 0; file <= 7 && pieces[rank * 8 + file].IsEqual(Piece(PieceType::NONE, PieceTeam::NONE)); ++file)
 					{
 						++emptyCount;
 					}
@@ -412,7 +404,7 @@ namespace Caissa
 
 					// ss << rank * 8 + file;
 
-					// ss << (char)(pieces[rank * 8 + file] == NonePiece ? '-' : pieces[rank * 8 + file].Algebraic() << " ";
+					// ss << (char)(pieces[rank * 8 + file] == Piece(PieceType::NONE, PieceTeam::NONE) ? '-' : pieces[rank * 8 + file].Algebraic() << " ";
 				}
 				ss << "  " << rank + 1 << std::endl;
 			}
@@ -446,23 +438,23 @@ namespace Caissa
 				{
 					pieces[move.OriginIndex - 1] = std::isupper(pieces[move.OriginIndex]) ? 'R' : 'r';
 					pieces[move.OriginIndex - 2] = std::isupper(pieces[move.OriginIndex]) ? 'K' : 'k';
-					pieces[move.OriginIndex - 0] = NonePiece;
-					pieces[move.OriginIndex - 4] = NonePiece;
+					pieces[move.OriginIndex - 0] = Piece(PieceType::NONE, PieceTeam::NONE);
+					pieces[move.OriginIndex - 4] = Piece(PieceType::NONE, PieceTeam::NONE);
 
 				}
 				else
 				{
 					pieces[move.OriginIndex + 1] = std::isupper(pieces[move.OriginIndex]) ? 'R' : 'r';
 					pieces[move.OriginIndex + 2] = std::isupper(pieces[move.OriginIndex]) ? 'K' : 'k';
-					pieces[move.OriginIndex + 0] = NonePiece;
-					pieces[move.OriginIndex + 3] = NonePiece;
+					pieces[move.OriginIndex + 0] = Piece(PieceType::NONE, PieceTeam::NONE);
+					pieces[move.OriginIndex + 3] = Piece(PieceType::NONE, PieceTeam::NONE);
 				}*/
 
 				return;
 			}
 
 			pieces[move.TargetIndex] = pieces[move.OriginIndex];
-			pieces[move.OriginIndex] = NonePiece;
+			pieces[move.OriginIndex] = Piece(PieceType::NONE, PieceTeam::NONE);
 
 			// Double pawn push
 			if (pieces[move.TargetIndex].Type == PieceType::PAWN && abs(ROW(move.OriginIndex) - ROW(move.TargetIndex)) == 2)
@@ -482,12 +474,12 @@ namespace Caissa
 				if (move.CapturePiece.Team == PieceTeam::WHITE)
 				{
 					// White piece captured
-					pieces[move.TargetIndex + 8] = NonePiece;
+					pieces[move.TargetIndex + 8] = Piece(PieceType::NONE, PieceTeam::NONE);
 				}
 				else
 				{
 					// Black piece captured
-					pieces[move.TargetIndex - 8] = NonePiece;
+					pieces[move.TargetIndex - 8] = Piece(PieceType::NONE, PieceTeam::NONE);
 				}
 			}
 		}
@@ -522,7 +514,7 @@ namespace Caissa
 			}
 
 			pieces[move.OriginIndex] = pieces[move.TargetIndex];
-			pieces[move.TargetIndex] = move.Type == MoveType::EN_PASSANT ? NonePiece : move.CapturePiece;
+			pieces[move.TargetIndex] = move.Type == MoveType::EN_PASSANT ? Piece(PieceType::NONE, PieceTeam::NONE) : move.CapturePiece;
 			whiteSideToMove = pieces[move.OriginIndex].Team == PieceTeam::WHITE;
 
 		}
@@ -544,10 +536,10 @@ namespace Caissa
 							moves.push_back(Move(i, i + 9, pieces[i + 9]));
 
 						// Generate white pawn push and long push.
-						if (pieces[i + 8] == NonePiece)
+						if (pieces[i + 8].IsEqual(Piece(PieceType::NONE, PieceTeam::NONE)))
 						{
 							moves.push_back(Move(i, i + 8, pieces[i + 8]));
-							if (pieces[i + 16] == NonePiece && i <= 15)
+							if (pieces[i + 16].IsEqual(Piece(PieceType::NONE, PieceTeam::NONE)) && i <= 15)
 								moves.push_back(Move(i, i + 16, pieces[i + 16]));
 						}
 					}
@@ -561,10 +553,10 @@ namespace Caissa
 							moves.push_back(Move(i, i - 9, pieces[i - 9]));
 
 						// Generate white pawn push and long push.
-						if (pieces[i - 8] == NonePiece)
+						if (pieces[i - 8].IsEqual(Piece(PieceType::NONE, PieceTeam::NONE)))
 						{
 							moves.push_back(Move(i, i - 8));
-							if (pieces[i - 16] == NonePiece && i >= 48)
+							if (pieces[i - 16].IsEqual(Piece(PieceType::NONE, PieceTeam::NONE)) && i >= 48)
 								moves.push_back(Move(i, i - 16));
 						}
 					}
@@ -623,13 +615,13 @@ namespace Caissa
 			// Generate castle moves.
 			if (whiteSideToMove)
 			{
-				if (whiteShortCastle) moves.push_back(Move(4, 6, NonePiece, MoveType::CASTLING));
-				if (whiteLongCastle) moves.push_back(Move(4, 2, NonePiece, MoveType::CASTLING));
+				if (whiteShortCastle) moves.push_back(Move(4, 6, Piece(PieceType::NONE, PieceTeam::NONE), MoveType::CASTLING));
+				if (whiteLongCastle) moves.push_back(Move(4, 2, Piece(PieceType::NONE, PieceTeam::NONE), MoveType::CASTLING));
 			}
 			else
 			{
-				if (blackShortCastle) moves.push_back(Move(60, 62, NonePiece, MoveType::CASTLING));
-				if (blackLongCastle) moves.push_back(Move(60, 58, NonePiece, MoveType::CASTLING));
+				if (blackShortCastle) moves.push_back(Move(60, 62, Piece(PieceType::NONE, PieceTeam::NONE), MoveType::CASTLING));
+				if (blackLongCastle) moves.push_back(Move(60, 58, Piece(PieceType::NONE, PieceTeam::NONE), MoveType::CASTLING));
 			}
 
 			// Generate en passant moves.
