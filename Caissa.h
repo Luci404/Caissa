@@ -11,6 +11,7 @@
 #include <iterator>
 #include <memory>
 #include <ctype.h>
+#include <cassert>
 
 namespace Caissa
 {
@@ -41,29 +42,107 @@ namespace Caissa
 		81, 82, 83, 84, 85, 86, 87, 88,
 		91, 92, 93, 94, 95, 96, 97, 98 };
 
-
-	typedef uint8_t Piece;
 	typedef uint16_t Square;
 
 	// 0x000(team)00000(piece)
-	enum PieceType : uint8_t
+	enum class PieceType : uint8_t
 	{
-		NONE = 0b00000000,
-		PAWN = 0b00000001,
-		KNIGHT = 0b00000010,
-		BISHOP = 0b00000011,
-		ROOK = 0b00000100,
-		QUEEN = 0b00000101,
-		KING = 0b00000110
+		NONE,
+		PAWN,
+		KNIGHT,
+		BISHOP,
+		ROOK,
+		QUEEN,
+		KING
 	};
 
-	enum TeamMask : uint8_t
+	enum class PieceTeam : uint8_t
 	{
-		WHITE = 0b00100000,
-		BLACK = 0b01000000
+		NONE,
+		WHITE,
+		BLACK
 	};
 
-	typedef TeamMask PlayerTeam;
+	typedef PieceTeam PlayerTeam;
+
+	struct Piece
+	{
+	public:
+		Piece()
+			: Type(PieceType::NONE), Team(PieceTeam::NONE)
+
+		{
+		}
+
+		// ! Algebraic hard-codeing should stay out of the source as much as possible, use the predefined enums instead.
+		Piece(char pieceAlgebraic)
+		{
+			Team = std::isupper(pieceAlgebraic) ? PieceTeam::WHITE : PieceTeam::BLACK;
+
+			if (std::toupper(pieceAlgebraic) == 'P') Type = PieceType::PAWN;
+			else if (std::toupper(pieceAlgebraic) == 'N') Type = PieceType::KNIGHT;
+			else if (std::toupper(pieceAlgebraic) == 'B') Type = PieceType::BISHOP;
+			else if (std::toupper(pieceAlgebraic) == 'R') Type = PieceType::ROOK;
+			else if (std::toupper(pieceAlgebraic) == 'Q') Type = PieceType::QUEEN;
+			else if (std::toupper(pieceAlgebraic) == 'K') Type = PieceType::KING;
+			else Type = PieceType::NONE;
+		}
+
+		Piece(PieceType type, PieceTeam team)
+			: Type(type), Team(team)
+		{
+		}
+
+		bool IsEqual(const Piece& piece) const
+		{
+			if (Type == PieceType::NONE && piece.Type == PieceType::NONE) return true;
+			else if (Type == piece.Type && Team == piece.Team) return true;
+			
+			return false;
+		}
+
+		// ! Algebraic hard-codeing should stay out of the source as much as possible, use the predefined enums instead.
+		bool IsEqualAlgebraic(char pieceAlgebraic) const
+		{
+			if (pieceAlgebraic == 0x00 && Type == PieceType::NONE) return true;
+
+			if ((std::isupper(pieceAlgebraic) && Team == PieceTeam::WHITE) || (std::islower(pieceAlgebraic) && Team == PieceTeam::BLACK))
+			{
+				if (std::toupper(pieceAlgebraic) == 'P' && Type == PieceType::PAWN) return true;
+				else if (std::toupper(pieceAlgebraic) == 'N' && Type == PieceType::KNIGHT) return true;
+				else if (std::toupper(pieceAlgebraic) == 'B' && Type == PieceType::BISHOP) return true;
+				else if (std::toupper(pieceAlgebraic) == 'R' && Type == PieceType::ROOK) return true;
+				else if (std::toupper(pieceAlgebraic) == 'Q' && Type == PieceType::QUEEN) return true;
+				else if (std::toupper(pieceAlgebraic) == 'K' && Type == PieceType::KING) return true;
+			}
+
+			return false;
+		}
+
+		// ! Algebraic hard-codeing should stay out of the source as much as possible, use the predefined enums instead.
+		char Algebraic() const
+		{
+			if (Type == PieceType::PAWN) return 'P';
+			else if (Type == PieceType::KNIGHT) return 'N';
+			else if (Type == PieceType::BISHOP) return 'B';
+			else if (Type == PieceType::ROOK) return 'R';
+			else if (Type == PieceType::QUEEN) return 'Q';
+			else if (Type == PieceType::KING) return 'K';
+			return ' ';
+		}
+
+	public: 
+		PieceType Type;
+		PieceTeam Team;
+	};
+
+	bool operator==(const Piece& left, const Piece& right) {
+		return left.IsEqual(right);
+	}
+
+
+	Piece NonePiece = Piece(PieceType::NONE, PieceTeam::NONE);
+
 
 	enum MoveType : uint8_t
 	{
@@ -92,7 +171,7 @@ namespace Caissa
 	struct Move
 	{
 	public:
-		Move(uint16_t originIndex, uint16_t targetIndex, Piece capturePiece = 0x00, MoveType moveType = MoveType::NORMAL)
+		Move(uint16_t originIndex, uint16_t targetIndex, Piece capturePiece = Piece(PieceType::NONE, PieceTeam::NONE), MoveType moveType = MoveType::NORMAL)
 			: OriginIndex(originIndex), TargetIndex(targetIndex), CapturePiece(capturePiece), Type(moveType)
 		{
 		}
@@ -142,7 +221,7 @@ namespace Caissa
 			}
 
 			string += " | ";
-			string += CapturePiece;
+			string += CapturePiece.Algebraic();
 
 			return string;
 		}
@@ -175,7 +254,7 @@ namespace Caissa
 			// Initialize piece array.
 			for (uint16_t i = 0; i < 64; ++i)
 			{
-				pieces[i] = 0x00;
+				pieces[i] = NonePiece;
 			}
 
 			// Parse FEN.
@@ -201,7 +280,7 @@ namespace Caissa
 				}
 				else if (token != std::string::npos)
 				{
-					pieces[square] = token;
+					pieces[square] = Piece(token);
 					++square;
 				}
 			}
@@ -237,7 +316,7 @@ namespace Caissa
 			{
 				for (uint16_t file = 0; file <= 7; file++)
 				{
-					for (emptyCount = 0; file <= 7 && pieces[rank * 8 + file] == 0x00; ++file)
+					for (emptyCount = 0; file <= 7 && pieces[rank * 8 + file] == NonePiece; ++file)
 					{
 						++emptyCount;
 					}
@@ -249,7 +328,7 @@ namespace Caissa
 
 					if (file <= 7)
 					{
-						ss << pieces[rank * 8 + file];
+						ss << pieces[rank * 8 + file].Algebraic();
 					}
 				}
 
@@ -333,7 +412,7 @@ namespace Caissa
 
 					// ss << rank * 8 + file;
 
-					ss << (char)(pieces[rank * 8 + file] == 0x00 ? '-' : pieces[rank * 8 + file]) << " ";
+					// ss << (char)(pieces[rank * 8 + file] == NonePiece ? '-' : pieces[rank * 8 + file].Algebraic() << " ";
 				}
 				ss << "  " << rank + 1 << std::endl;
 			}
@@ -347,7 +426,7 @@ namespace Caissa
 		{
 			for (uint16_t i = 0; i < 64; ++i)
 			{
-				if (std::toupper(pieces[i]) == 'K' && (bool)std::isupper(pieces[i]) == whiteSideToMove)
+				if (pieces[i].Type == PieceType::KING && (pieces[i].Team == PieceTeam::WHITE) == whiteSideToMove)
 				{
 					return IsAttacking(i, !whiteSideToMove);
 				}
@@ -358,35 +437,35 @@ namespace Caissa
 
 		virtual void MakeMove(Move move) override
 		{
-			whiteSideToMove = (bool)std::islower(pieces[move.OriginIndex]);
+			whiteSideToMove = pieces[move.OriginIndex].Team == PieceTeam::BLACK;
 
 			// Castling
 			if (move.Type == MoveType::CASTLING)
 			{
-				if (COL(move.OriginIndex) > COL(move.TargetIndex))
+				/*if (COL(move.OriginIndex) > COL(move.TargetIndex))
 				{
 					pieces[move.OriginIndex - 1] = std::isupper(pieces[move.OriginIndex]) ? 'R' : 'r';
 					pieces[move.OriginIndex - 2] = std::isupper(pieces[move.OriginIndex]) ? 'K' : 'k';
-					pieces[move.OriginIndex - 0] = 0x00;
-					pieces[move.OriginIndex - 4] = 0x00;
+					pieces[move.OriginIndex - 0] = NonePiece;
+					pieces[move.OriginIndex - 4] = NonePiece;
 
 				}
 				else
 				{
 					pieces[move.OriginIndex + 1] = std::isupper(pieces[move.OriginIndex]) ? 'R' : 'r';
 					pieces[move.OriginIndex + 2] = std::isupper(pieces[move.OriginIndex]) ? 'K' : 'k';
-					pieces[move.OriginIndex + 0] = 0x00;
-					pieces[move.OriginIndex + 3] = 0x00;
-				}
+					pieces[move.OriginIndex + 0] = NonePiece;
+					pieces[move.OriginIndex + 3] = NonePiece;
+				}*/
 
 				return;
 			}
 
 			pieces[move.TargetIndex] = pieces[move.OriginIndex];
-			pieces[move.OriginIndex] = 0x00;
+			pieces[move.OriginIndex] = NonePiece;
 
 			// Double pawn push
-			if (std::toupper(pieces[move.TargetIndex]) == 'P' && abs(ROW(move.OriginIndex) - ROW(move.TargetIndex)) == 2)
+			if (pieces[move.TargetIndex].Type == PieceType::PAWN && abs(ROW(move.OriginIndex) - ROW(move.TargetIndex)) == 2)
 			{
 				oldEnPassantIndex = enPassantIndex;
 				enPassantIndex = whiteSideToMove ? move.TargetIndex + 8 : move.TargetIndex - 8;
@@ -400,15 +479,15 @@ namespace Caissa
 			// En passant
 			if (move.Type == MoveType::EN_PASSANT)
 			{
-				if (std::isupper(move.CapturePiece))
+				if (move.CapturePiece.Team == PieceTeam::WHITE)
 				{
 					// White piece captured
-					pieces[move.TargetIndex + 8] = 0x00;
+					pieces[move.TargetIndex + 8] = NonePiece;
 				}
 				else
 				{
 					// Black piece captured
-					pieces[move.TargetIndex - 8] = 0x00;
+					pieces[move.TargetIndex - 8] = NonePiece;
 				}
 			}
 		}
@@ -418,7 +497,7 @@ namespace Caissa
 			// En passant
 			if (move.Type == MoveType::EN_PASSANT)
 			{
-				if (std::isupper(move.CapturePiece))
+				if (move.CapturePiece.Team == PieceTeam::WHITE)
 				{
 					// White piece captured
 					pieces[move.TargetIndex + 8] = move.CapturePiece;
@@ -431,7 +510,7 @@ namespace Caissa
 			}
 
 			// Double pawn push
-			if (std::toupper(pieces[move.TargetIndex]) == 'P' && abs(ROW(move.OriginIndex) - ROW(move.TargetIndex)) == 2)
+			if (pieces[move.TargetIndex].Type == PieceType::PAWN && abs(ROW(move.OriginIndex) - ROW(move.TargetIndex)) == 2)
 			{
 				enPassantIndex = oldEnPassantIndex;
 				oldEnPassantIndex = UINT16_MAX;
@@ -443,8 +522,9 @@ namespace Caissa
 			}
 
 			pieces[move.OriginIndex] = pieces[move.TargetIndex];
-			pieces[move.TargetIndex] = move.Type == MoveType::EN_PASSANT ? 0x00 : move.CapturePiece;
-			whiteSideToMove = (bool)std::isupper(pieces[move.OriginIndex]);
+			pieces[move.TargetIndex] = move.Type == MoveType::EN_PASSANT ? NonePiece : move.CapturePiece;
+			whiteSideToMove = pieces[move.OriginIndex].Team == PieceTeam::WHITE;
+
 		}
 
 		std::vector<Move> GetLegalMoves() const override
@@ -453,53 +533,53 @@ namespace Caissa
 
 			for (uint16_t i = 0; i < 64; ++i)
 			{
-				if ((bool)std::isupper(pieces[i]) == whiteSideToMove)
+				if ((pieces[i].Team == PieceTeam::WHITE) == whiteSideToMove)
 				{
-					if (pieces[i] == 'P')
+					if (pieces[i].IsEqualAlgebraic('P'))
 					{
 						// Generate white pawn captures.
-						if (COL(i) != 0 && std::islower(pieces[i + 7]))
+						if (COL(i) != 0 && (pieces[i + 7].Team == PieceTeam::BLACK))
 							moves.push_back(Move(i, i + 7, pieces[i + 7]));
-						if (COL(i) != 7 && std::islower(pieces[i + 9]))
+						if (COL(i) != 7 && (pieces[i + 9].Team == PieceTeam::BLACK))
 							moves.push_back(Move(i, i + 9, pieces[i + 9]));
 
 						// Generate white pawn push and long push.
-						if (pieces[i + 8] == 0x00)
+						if (pieces[i + 8] == NonePiece)
 						{
 							moves.push_back(Move(i, i + 8, pieces[i + 8]));
-							if (pieces[i + 16] == 0x00 && i <= 15)
+							if (pieces[i + 16] == NonePiece && i <= 15)
 								moves.push_back(Move(i, i + 16, pieces[i + 16]));
 						}
 					}
-					else if (pieces[i] == 'p')
+					else if (pieces[i].IsEqualAlgebraic('p'))
 					{
 
 						// Generate white pawn captures.
-						if (COL(i) != 0 && std::isupper(pieces[i - 7]))
+						if (COL(i) != 0 && (pieces[i - 7].Team == PieceTeam::WHITE))
 							moves.push_back(Move(i, i - 7, pieces[i - 7]));
-						if (COL(i) != 0 && std::isupper(pieces[i - 9]))
+						if (COL(i) != 0 && (pieces[i - 9].Team == PieceTeam::WHITE))
 							moves.push_back(Move(i, i - 9, pieces[i - 9]));
 
 						// Generate white pawn push and long push.
-						if (pieces[i - 8] == 0x00)
+						if (pieces[i - 8] == NonePiece)
 						{
 							moves.push_back(Move(i, i - 8));
-							if (pieces[i - 16] == 0x00 && i >= 48)
+							if (pieces[i - 16] == NonePiece && i >= 48)
 								moves.push_back(Move(i, i - 16));
 						}
 					}
 					else
 					{
 						int piece = 0;
-						if (std::toupper(pieces[i]) == 'N')
+						if (pieces[i].Type == PieceType::KNIGHT)
 							piece = 1;
-						else if (std::toupper(pieces[i]) == 'B')
+						else if (pieces[i].Type == PieceType::BISHOP)
 							piece = 2;
-						else if (std::toupper(pieces[i]) == 'R')
+						else if (pieces[i].Type == PieceType::ROOK)
 							piece = 3;
-						else if (std::toupper(pieces[i]) == 'Q')
+						else if (pieces[i].Type == PieceType::QUEEN)
 							piece = 4;
-						else if (std::toupper(pieces[i]) == 'K')
+						else if (pieces[i].Type == PieceType::KING)
 							piece = 5;
 
 						bool slide[6] = {
@@ -523,9 +603,9 @@ namespace Caissa
 								target = mailbox[mailbox64[target] + offset[piece][j]];
 								if (target == UINT16_MAX)
 									break; /* Check if target is out of board. */
-								if (pieces[target] != 0x00)
+								if (pieces[target].Type != PieceType::NONE)
 								{
-									if (std::isupper(pieces[target]) && !whiteSideToMove || std::islower(pieces[target]) && whiteSideToMove)
+									if ((pieces[target].Team == PieceTeam::WHITE) && !whiteSideToMove || (pieces[target].Team == PieceTeam::BLACK) && whiteSideToMove)
 									{
 										moves.push_back(Move(i, target, pieces[target]));
 									}
@@ -543,13 +623,13 @@ namespace Caissa
 			// Generate castle moves.
 			if (whiteSideToMove)
 			{
-				if (whiteShortCastle) moves.push_back(Move(4, 6, 0x00, MoveType::CASTLING));
-				if (whiteLongCastle) moves.push_back(Move(4, 2, 0x00, MoveType::CASTLING));
+				if (whiteShortCastle) moves.push_back(Move(4, 6, NonePiece, MoveType::CASTLING));
+				if (whiteLongCastle) moves.push_back(Move(4, 2, NonePiece, MoveType::CASTLING));
 			}
 			else
 			{
-				if (blackShortCastle) moves.push_back(Move(60, 62, 0x00, MoveType::CASTLING));
-				if (blackLongCastle) moves.push_back(Move(60, 58, 0x00, MoveType::CASTLING));
+				if (blackShortCastle) moves.push_back(Move(60, 62, NonePiece, MoveType::CASTLING));
+				if (blackLongCastle) moves.push_back(Move(60, 58, NonePiece, MoveType::CASTLING));
 			}
 
 			// Generate en passant moves.
@@ -557,13 +637,13 @@ namespace Caissa
 			{
 				if (whiteSideToMove)
 				{
-					if (pieces[enPassantIndex - 7] || 'P') moves.push_back(Move(enPassantIndex - 7, enPassantIndex, pieces[enPassantIndex - 8], MoveType::EN_PASSANT));
-					else if (pieces[enPassantIndex - 9] == 'P') moves.push_back(Move(enPassantIndex - 9, enPassantIndex, pieces[enPassantIndex - 8], MoveType::EN_PASSANT));
+					if (pieces[enPassantIndex - 7].IsEqualAlgebraic('P'))moves.push_back(Move(enPassantIndex - 7, enPassantIndex, pieces[enPassantIndex - 8], MoveType::EN_PASSANT));
+					else if (pieces[enPassantIndex - 9].IsEqualAlgebraic('P')) moves.push_back(Move(enPassantIndex - 9, enPassantIndex, pieces[enPassantIndex - 8], MoveType::EN_PASSANT));
 				}
 				else
 				{
-					if (pieces[enPassantIndex + 7] == 'p') moves.push_back(Move(enPassantIndex + 7, enPassantIndex, pieces[enPassantIndex + 8], MoveType::EN_PASSANT));
-					else if (pieces[enPassantIndex + 9] == 'p') moves.push_back(Move(enPassantIndex + 9, enPassantIndex, pieces[enPassantIndex + 8], MoveType::EN_PASSANT));
+					if (pieces[enPassantIndex + 7].IsEqualAlgebraic('p')) moves.push_back(Move(enPassantIndex + 7, enPassantIndex, pieces[enPassantIndex + 8], MoveType::EN_PASSANT));
+					else if (pieces[enPassantIndex + 9].IsEqualAlgebraic('p')) moves.push_back(Move(enPassantIndex + 9, enPassantIndex, pieces[enPassantIndex + 8], MoveType::EN_PASSANT));
 				}
 			}
 
