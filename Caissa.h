@@ -145,7 +145,7 @@ namespace Caissa
 		SET_PIECE
 	};
 
-	/*enum GenType {
+	enum GenType {
 		CAPTURES,
 		QUIETS,
 		QUIET_CHECKS,
@@ -153,12 +153,6 @@ namespace Caissa
 		NON_EVASIONS,
 		LEGAL
 	};
-
-	template<GenType T>
-	struct MoveList
-	{
-		// Find stuff.
-	};*/
 
 	struct Move
 	{
@@ -381,6 +375,34 @@ namespace Caissa
 			{
 				pieces[targetSquare] = piece;
 			}
+		}
+
+		uint32_t GetPieceEvaluation(Piece piece) const
+		{
+			switch (piece.Type)
+			{
+			case PieceType::PAWN: return 1;
+			case PieceType::KNIGHT: return 3;
+			case PieceType::BISHOP: return 3;
+			case PieceType::ROOK: return 5;
+			case PieceType::QUEEN: return 9;
+			case PieceType::KING: return 0;
+			}
+
+			return 0;
+		}
+
+		uint32_t GetMaterialEvaluation(PlayerTeam team) const
+		{
+			uint32_t evaluation = 0;
+			for (size_t i = 0; i < sizeof(pieces) / sizeof(Piece); i++)
+			{
+				if (pieces[i].Team == team)
+				{
+					evaluation += GetPieceEvaluation(pieces[i]);
+				}
+			}
+			return evaluation;
 		}
 
 		/*
